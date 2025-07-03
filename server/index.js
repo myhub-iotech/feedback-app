@@ -50,6 +50,11 @@ app.post('/submitFeedback', async (req, res) => {
   }
 });
 
+// In your Express backend (Node.js)
+app.get('/health', (req, res) => {
+  res.status(200).send('✅ OK');
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);
 });
