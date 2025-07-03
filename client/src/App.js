@@ -34,7 +34,7 @@ function App() {
     setIsSubmitting(true); // show loading spinner
 
     const feedbackData = {
-      module: 'washroom',
+      solution: 'SWS', // ✅ Updated field name to indicate this is coming from Smart Washroom Solution (Not Parking)
       rating,
       reasons,
       additionalComment,
@@ -76,10 +76,9 @@ function App() {
       <p className="feedbackNote">
         💬 Your feedback is valued and helps us improve everyone’s washroom experience.
       </p>
-      <h2>🧼 How was your washroom experience?</h2>
-
       {!submitted ? (
         <>
+          <h2>🧼 How was your washroom experience?</h2>
           <div className="smileys">
             {[
               { emoji: '😄', label: 'Super Happy', value: 'Excellent' },

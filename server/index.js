@@ -1,7 +1,7 @@
-const express = require("express");
-const cors = require("cors");
-const { MongoClient } = require("mongodb");
-require("dotenv").config();
+const express = require('express');
+const cors = require('cors');
+const { MongoClient } = require('mongodb');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -11,26 +11,42 @@ const client = new MongoClient(process.env.MONGO_URI);
 let collection;
 
 client.connect().then(() => {
-  const db = client.db("UserFeedback");
-  collection = db.collection("feedback");
-  console.log("Connected to MongoDB");
+  const db = client.db('UserFeedback');
+  collection = db.collection('feedback');
+  console.log('Connected to MongoDB');
 });
 
-app.post("/submitFeedback", async (req, res) => {
+app.post('/submitFeedback', async (req, res) => {
   try {
-    const { rating, reasons, device_id, location } = req.body;
-    const timestamp = new Date();
-    await collection.insertOne({
+    const {
+      solution, // ✅ NEW field
       rating,
       reasons,
       device_id,
       location,
+      additionalComment, // ✅ NEW field
+      browser, // ✅ NEW field
+      hourOfDay, // ✅ NEW field
+    } = req.body;
+
+    const timestamp = new Date();
+
+    await collection.insertOne({
+      solution,
+      rating,
+      reasons,
+      additionalComment,
+      device_id,
+      location,
+      browser,
+      hourOfDay,
       timestamp,
     });
-    res.status(200).json({ message: "Feedback submitted successfully" });
+
+    res.status(200).json({ message: 'Feedback submitted successfully' });
   } catch (error) {
-    console.error("Insert Error", error);
-    res.status(500).json({ error: "Failed to submit feedback" });
+    console.error('Insert Error', error);
+    res.status(500).json({ error: 'Failed to submit feedback' });
   }
 });
 
