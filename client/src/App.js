@@ -1,64 +1,80 @@
-import React, { useState } from "react";
-import axios from "axios";
-import "./App.css";
+import React, { useState } from 'react';
+import axios from 'axios';
+import './App.css';
 
 const positiveReasons = [
-  "Overall Experience was Great",
-  "Loved the Hands-Free Operation",
-  "Super Happy to see My Feedback Implemented",
+  'Overall Experience was Great',
+  'Loved the Hands-Free Operation',
+  'Super Happy to see My Feedback Implemented',
 ];
 
 const negativeReasons = [
-  "Paper Towels Unavailable",
-  "Liquid Soap Unavailable",
-  "Trash Bin not Cleaned",
-  "Floor not Clean",
-  "Bad Odor",
-  "Broken Fixtures",
+  'Paper Towels Unavailable',
+  'Liquid Soap Unavailable',
+  'Trash Bin not Cleaned',
+  'Floor not Clean',
+  'Bad Odor',
+  'Broken Fixtures',
 ];
 
 function App() {
-  const [rating, setRating] = useState("");
+  const [rating, setRating] = useState('');
   const [reasons, setReasons] = useState([]);
   const [submitted, setSubmitted] = useState(false);
-  const [additionalComment, setAdditionalComment] = useState("");
+  const [additionalComment, setAdditionalComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleReason = (reason) => {
     setReasons((prev) =>
-      prev.includes(reason)
-        ? prev.filter((r) => r !== reason)
-        : [...prev, reason]
+      prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason]
     );
   };
 
   const handleSubmit = async () => {
+    setIsSubmitting(true); // show loading spinner
+
     const feedbackData = {
-      module: "washroom",
+      module: 'washroom',
       rating,
       reasons,
-      additionalComment, // ✅ include this field
-      device_id: "Tablet01",
-      location: "Washroom 2",
+      additionalComment,
+      device_id: 'Tablet01',
+      location: 'Washroom 2',
       timestamp: new Date().toISOString(),
+      browser: navigator.userAgent, // ✅ browser info
+      hourOfDay: new Date().getHours(), // ✅ time of day
     };
 
     try {
-      await axios.post("http://localhost:5000/submitFeedback", feedbackData);
+      await axios.post('http://localhost:5000/submitFeedback', feedbackData);
       setSubmitted(true);
-      setRating("");
+      setRating('');
       setReasons([]);
-      setAdditionalComment(""); // ✅ clear after submit
+      setAdditionalComment('');
+
+      // Auto-reset after 5 seconds
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 5000);
     } catch (err) {
       console.error(err);
-      alert("❌ Failed to submit feedback");
+      alert('❌ Failed to submit feedback');
+    } finally {
+      setIsSubmitting(false); // hide spinner
     }
+  };
+
+  const handleReset = () => {
+    setRating('');
+    setReasons([]);
+    setAdditionalComment('');
+    setSubmitted(false);
   };
 
   return (
     <div className="App">
       <p className="feedbackNote">
-        💬 Your feedback is valued and helps us improve everyone’s washroom
-        experience.
+        💬 Your feedback is valued and helps us improve everyone’s washroom experience.
       </p>
       <h2>🧼 How was your washroom experience?</h2>
 
@@ -66,16 +82,16 @@ function App() {
         <>
           <div className="smileys">
             {[
-              { emoji: "😄", label: "Super Happy", value: "Excellent" },
-              { emoji: "🙂", label: "Happy", value: "Good" },
-              { emoji: "😐", label: "Neutral", value: "Okay" },
-              { emoji: "🙁", label: "Unhappy", value: "Poor" },
-              { emoji: "😠", label: "Most Disappointed", value: "Very Poor" },
+              { emoji: '😄', label: 'Super Happy', value: 'Excellent' },
+              { emoji: '🙂', label: 'Happy', value: 'Good' },
+              { emoji: '😐', label: 'Neutral', value: 'Okay' },
+              { emoji: '🙁', label: 'Unhappy', value: 'Poor' },
+              { emoji: '😠', label: 'Most Disappointed', value: 'Very Poor' },
             ].map((item) => (
               <div key={item.value} className="smileyOption">
                 <button
                   onClick={() => setRating(item.value)}
-                  className={rating === item.value ? "selected" : ""}
+                  className={rating === item.value ? 'selected' : ''}
                 >
                   {item.emoji}
                 </button>
@@ -87,8 +103,8 @@ function App() {
           {rating && (
             <>
               <h3>
-                💡 Just one more step for us to serve you better — what specific
-                aspect stood out to you?
+                💡 Just one more step for us to serve you better — what specific aspect stood out to
+                you?
               </h3>
 
               <div className="reasonSection">
@@ -98,9 +114,7 @@ function App() {
                     <button
                       key={reason}
                       onClick={() => toggleReason(reason)}
-                      className={`reasonButton green ${
-                        reasons.includes(reason) ? "selected" : ""
-                      }`}
+                      className={`reasonButton green ${reasons.includes(reason) ? 'selected' : ''}`}
                     >
                       {reason}
                     </button>
@@ -113,16 +127,14 @@ function App() {
                     <button
                       key={reason}
                       onClick={() => toggleReason(reason)}
-                      className={`reasonButton amber ${
-                        reasons.includes(reason) ? "selected" : ""
-                      }`}
+                      className={`reasonButton amber ${reasons.includes(reason) ? 'selected' : ''}`}
                     >
                       {reason}
                     </button>
                   ))}
                 </div>
 
-                <div style={{ marginTop: "1rem" }}>
+                <div style={{ marginTop: '1rem' }}>
                   <label htmlFor="additionalComment">
                     <strong>🗣️ Anything else you'd like to share?</strong>
                   </label>
@@ -134,24 +146,27 @@ function App() {
                     placeholder="Type your comment here..."
                     rows={3}
                     style={{
-                      width: "90%",
-                      padding: "0.5rem",
-                      borderRadius: "8px",
-                      border: "1px solid #ccc",
-                      marginTop: "0.5rem",
+                      width: '90%',
+                      padding: '0.5rem',
+                      borderRadius: '8px',
+                      border: '1px solid #ccc',
+                      marginTop: '0.5rem',
                     }}
                   />
                 </div>
 
+                {isSubmitting && <p style={{ color: '#007bff' }}>Submitting...</p>}
+
                 <button className="submitBtn" onClick={handleSubmit}>
                   Submit
                 </button>
+                <button onClick={handleReset}>🔄 Reset</button>
               </div>
             </>
           )}
         </>
       ) : (
-        <h3>✅ Thank you for your feedback!</h3>
+        <h3>🎉 Feedback submitted successfully!</h3>
       )}
     </div>
   );
