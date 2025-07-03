@@ -47,21 +47,30 @@
 
 .smileys {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 1.5rem;
-  margin-bottom: 1rem;
 }
 
 .smileyOption {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex: 1 1 80px; /* Allows wrapping on small screens */
+  max-width: 100px;
+}
+
+.smileyOption button {
+  font-size: 2rem;
+  padding: 8px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f0f0f0;
 }
 
 .smileyLabel {
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-  color: #333;
+  font-size: 0.9rem;
+  word-wrap: break-word;
 }
 
 .reasonSection h4 {

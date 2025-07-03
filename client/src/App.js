@@ -46,7 +46,7 @@ function App() {
     };
 
     try {
-      await axios.post('http://localhost:5000/submitFeedback', feedbackData);
+      await axios.post('https://feedback-app-7ll0.onrender.com/submitFeedback', feedbackData);
       setSubmitted(true);
       setRating('');
       setReasons([]);
