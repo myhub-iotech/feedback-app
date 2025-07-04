@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -23,6 +23,18 @@ function App() {
   const [submitted, setSubmitted] = useState(false);
   const [additionalComment, setAdditionalComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [config, setConfig] = useState({});
+  const configReady = config.solution && config.device_id && config.location;
+
+  useEffect(() => {
+    fetch('/config.json')
+      .then((res) => res.json())
+      .then((data) => setConfig(data))
+      .catch((err) => {
+        console.error('❌ Failed to load config.json', err);
+        alert('Failed to load configuration. Please contact support.');
+      });
+  }, []);
 
   const toggleReason = (reason) => {
     setReasons((prev) =>
@@ -31,15 +43,20 @@ function App() {
   };
 
   const handleSubmit = async () => {
+    if (!configReady) {
+      alert('Configuration not loaded yet. Please wait a moment.');
+      return;
+    }
+
     setIsSubmitting(true); // show loading spinner
 
     const feedbackData = {
-      solution: 'SWS', // ✅ Updated field name to indicate this is coming from Smart Washroom Solution (Not Parking)
+      solution: config.solution || 'SWS', // ✅ Updated field name to indicate this is coming from Smart Washroom Solution (Not Parking)
       rating,
       reasons,
       additionalComment,
-      device_id: 'Tablet01',
-      location: 'Washroom 2',
+      device_id: config.device_id || 'UNKNOWN_DEVICE',
+      location: config.location || 'UNKNOWN_LOCATION',
       timestamp: new Date().toISOString(),
       browser: navigator.userAgent, // ✅ browser info
       hourOfDay: new Date().getHours(), // ✅ time of day
