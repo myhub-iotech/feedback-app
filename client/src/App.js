@@ -78,7 +78,7 @@ function App() {
       </p>
       {!submitted ? (
         <>
-          <h2>🧼 How was your washroom experience?</h2>
+          <h2>📝 How was your washroom experience?</h2>
           <div className="smileys">
             {[
               { emoji: '😄', label: 'Super Happy', value: 'Excellent' },
@@ -109,28 +109,36 @@ function App() {
               <div className="reasonSection">
                 <h4>👍 What you liked most? </h4>
                 <div className="reasons">
-                  {positiveReasons.map((reason) => (
-                    <button
-                      key={reason}
-                      onClick={() => toggleReason(reason)}
-                      className={`reasonButton green ${reasons.includes(reason) ? 'selected' : ''}`}
-                    >
-                      {reason}
-                    </button>
-                  ))}
+                  {positiveReasons.map((reason) => {
+                    const isSelected = reasons.includes(reason);
+                    return (
+                      <button
+                        key={reason}
+                        onClick={() => toggleReason(reason)}
+                        className={`reasonButton green ${isSelected ? 'selected' : ''}`}
+                      >
+                        {isSelected ? '✅ ' : ''}
+                        {reason}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <h4>🤔 What could have been better?</h4>
                 <div className="reasons">
-                  {negativeReasons.map((reason) => (
-                    <button
-                      key={reason}
-                      onClick={() => toggleReason(reason)}
-                      className={`reasonButton amber ${reasons.includes(reason) ? 'selected' : ''}`}
-                    >
-                      {reason}
-                    </button>
-                  ))}
+                  {negativeReasons.map((reason) => {
+                    const isSelected = reasons.includes(reason);
+                    return (
+                      <button
+                        key={reason}
+                        onClick={() => toggleReason(reason)}
+                        className={`reasonButton amber ${isSelected ? 'selected' : ''}`}
+                      >
+                        {isSelected ? '✅ ' : ''}
+                        {reason}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div style={{ marginTop: '1rem' }}>

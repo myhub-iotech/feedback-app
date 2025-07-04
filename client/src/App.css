@@ -14,8 +14,9 @@
 }
 
 .smileys .selected {
-  border-color: #007bff;
-  background-color: #007bff10;
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+  border: 2px solid #007bff;
+  background-color: #e8f4ff;
 }
 
 .reasons button {
@@ -67,7 +68,8 @@
   height: 60px;
   border-radius: 50%;
   border: none;
-  background-color: #f0f0f0;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease-in-out;
 }
 
 .smileyLabel {
@@ -92,11 +94,17 @@
 
 .reasonButton {
   padding: 0.5rem 1rem;
+  padding-left: 0.8rem; /* Optional tweak */
   border-radius: 20px;
   border: none;
   cursor: pointer;
   font-size: 0.95rem;
   white-space: nowrap;
+}
+
+.reasonButton:hover {
+  background-color: #e6e6e6;
+  transform: scale(1.03);
 }
 
 .reasonButton.green {
@@ -109,9 +117,22 @@
   color: #856404;
 }
 
-.reasonButton.selected {
-  outline: 2px solid #333;
-  font-weight: bold;
+.reasonButton.green.selected {
+  background-color: #28a745;
+  color: white;
+  border: 2px solid #1e7e34;
+  box-shadow: 0 0 6px rgba(40, 167, 69, 0.4);
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
+.reasonButton.amber.selected {
+  background-color: #ffc107;
+  color: black;
+  border: 2px solid #d39e00;
+  box-shadow: 0 0 6px rgba(255, 193, 7, 0.4);
+  transform: scale(1.05);
+  transition: all 0.2s ease;
 }
 
 .resetBtn {
