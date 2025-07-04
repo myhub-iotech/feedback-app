@@ -54,7 +54,9 @@
 
 .smileyOption {
   display: flex;
-  flex: 1 1 80px; /* Allows wrapping on small screens */
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 80px;
   max-width: 100px;
 }
 
@@ -70,7 +72,8 @@
 
 .smileyLabel {
   font-size: 0.9rem;
-  word-wrap: break-word;
+  margin-top: 0.3rem;
+  text-align: center;
 }
 
 .reasonSection h4 {
@@ -109,4 +112,21 @@
 .reasonButton.selected {
   outline: 2px solid #333;
   font-weight: bold;
+}
+
+.resetBtn {
+  margin-top: 1rem;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  margin-left: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.resetBtn:hover {
+  background-color: #d6d6d6;
 }

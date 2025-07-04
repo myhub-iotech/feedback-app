@@ -5,7 +5,7 @@ import './App.css';
 const positiveReasons = [
   'Overall Experience was Great',
   'Loved the Hands-Free Operation',
-  'Super Happy to see My Feedback Implemented',
+  'Awesome to see Action taken on my Feedback',
 ];
 
 const negativeReasons = [
@@ -107,7 +107,7 @@ function App() {
               </h3>
 
               <div className="reasonSection">
-                <h4>✅ Positive Feedback</h4>
+                <h4>👍 What you liked most? </h4>
                 <div className="reasons">
                   {positiveReasons.map((reason) => (
                     <button
@@ -120,7 +120,7 @@ function App() {
                   ))}
                 </div>
 
-                <h4>⚠️ Areas to Improve</h4>
+                <h4>🤔 What could have been better?</h4>
                 <div className="reasons">
                   {negativeReasons.map((reason) => (
                     <button
@@ -135,7 +135,7 @@ function App() {
 
                 <div style={{ marginTop: '1rem' }}>
                   <label htmlFor="additionalComment">
-                    <strong>🗣️ Anything else you'd like to share?</strong>
+                    <strong>💡 Anything else you'd like to share?</strong>
                   </label>
                   <br />
                   <textarea
@@ -159,7 +159,9 @@ function App() {
                 <button className="submitBtn" onClick={handleSubmit}>
                   Submit
                 </button>
-                <button onClick={handleReset}>🔄 Reset</button>
+                <button className="resetBtn" onClick={handleReset}>
+                  🔄 Reset
+                </button>
               </div>
             </>
           )}
