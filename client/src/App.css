@@ -1,6 +1,6 @@
 .App {
   text-align: center;
-  padding: 2rem;
+  padding: 1rem 1rem 0.5rem 1rem;
   font-family: sans-serif;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .submitBtn {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   padding: 0.6rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
@@ -44,13 +44,16 @@
   color: white;
   border: none;
   border-radius: 8px;
+  flex: 1;
+  max-width: 140px; /* New: keeps both buttons balanced */
 }
 
 .smileys {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 5rem; /* ⬅️ Increased from 1.5rem to 3rem for more spacing */
+  margin: 2rem 0; /* Optional: Adds space above and below */
 }
 
 .smileyOption {
@@ -62,19 +65,28 @@
 }
 
 .smileyOption button {
-  font-size: 2rem;
-  padding: 8px;
-  width: 60px;
-  height: 60px;
+  font-size: 3.5rem; /* 👍 Large emoji stays */
+  padding: 0;
+  width: 90px; /* 👈 Adjust to fit emoji */
+  height: 90px;
   border-radius: 50%;
-  border: none;
+  border: 2px solid #ccc;
   background-color: #f8f9fa;
-  transition: all 0.2s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.smileyOption button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
 }
 
 .smileyLabel {
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
+  font-size: 1.2rem; /* ⬆️ Increased for better visibility */
+  font-weight: 600; /* Optional: makes it bolder */
+  margin-top: 0.5rem;
   text-align: center;
 }
 
@@ -136,7 +148,7 @@
 }
 
 .resetBtn {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   padding: 0.6rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
@@ -144,10 +156,78 @@
   color: #333;
   border: none;
   border-radius: 8px;
-  margin-left: 1rem;
-  transition: background-color 0.3s ease;
+  flex: 1;
+  max-width: 140px; /* matches submit button */
 }
 
 .resetBtn:hover {
   background-color: #d6d6d6;
+}
+
+.feedbackGrid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.feedbackColumn {
+  flex: 1;
+  min-width: 300px;
+}
+
+.comment-box {
+  width: 90%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.comment-box textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: vertical;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.thankYouBlock {
+  background-color: #e7f9ed;
+  padding: 1.5rem;
+  border-radius: 10px;
+  color: #155724;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

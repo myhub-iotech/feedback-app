@@ -90,23 +90,22 @@ function App() {
 
   return (
     <div className="App">
-      <p className="feedbackNote">
-        💬 Your feedback is valued and helps us improve everyone’s washroom experience.
-      </p>
       {!submitted ? (
         <>
           <h2>📝 How was your washroom experience?</h2>
           <div className="smileys">
             {[
-              { emoji: '😄', label: 'Super Happy', value: 'Excellent' },
-              { emoji: '🙂', label: 'Happy', value: 'Good' },
-              { emoji: '😐', label: 'Neutral', value: 'Okay' },
-              { emoji: '🙁', label: 'Unhappy', value: 'Poor' },
-              { emoji: '😠', label: 'Most Disappointed', value: 'Very Poor' },
+              { emoji: '😄', label: 'Excellent', value: 'Excellent' },
+              { emoji: '🙂', label: 'Satisfactory', value: 'Good' },
+              { emoji: '🙁', label: 'Unsatisfactory', value: 'Poor' },
             ].map((item) => (
               <div key={item.value} className="smileyOption">
                 <button
-                  onClick={() => setRating(item.value)}
+                  onClick={() => {
+                    setRating(item.value);
+                    setReasons([]);
+                    setAdditionalComment('');
+                  }}
                   className={rating === item.value ? 'selected' : ''}
                 >
                   {item.emoji}
@@ -118,81 +117,103 @@ function App() {
 
           {rating && (
             <>
-              <h3>
-                💡 Just one more step for us to serve you better — what specific aspect stood out to
-                you?
-              </h3>
+              <div className="feedbackGrid">
+                {['Excellent', 'Good'].includes(rating) && (
+                  <div className="feedbackColumn">
+                    <h4>👍 What you liked most?</h4>
+                    <div className="reasons">
+                      {positiveReasons.map((reason) => {
+                        const isSelected = reasons.includes(reason);
+                        return (
+                          <button
+                            key={reason}
+                            onClick={() => toggleReason(reason)}
+                            className={`reasonButton green ${isSelected ? 'selected' : ''}`}
+                          >
+                            {isSelected ? '✅ ' : ''}
+                            {reason}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
-              <div className="reasonSection">
-                <h4>👍 What you liked most? </h4>
-                <div className="reasons">
-                  {positiveReasons.map((reason) => {
-                    const isSelected = reasons.includes(reason);
-                    return (
-                      <button
-                        key={reason}
-                        onClick={() => toggleReason(reason)}
-                        className={`reasonButton green ${isSelected ? 'selected' : ''}`}
-                      >
-                        {isSelected ? '✅ ' : ''}
-                        {reason}
-                      </button>
-                    );
-                  })}
-                </div>
+                {['Poor'].includes(rating) && (
+                  <div className="feedbackColumn">
+                    <h4>🤔 What could have been better?</h4>
+                    <div className="reasons">
+                      {negativeReasons.map((reason) => {
+                        const isSelected = reasons.includes(reason);
+                        return (
+                          <button
+                            key={reason}
+                            onClick={() => toggleReason(reason)}
+                            className={`reasonButton amber ${isSelected ? 'selected' : ''}`}
+                          >
+                            {isSelected ? '✅ ' : ''}
+                            {reason}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
-                <h4>🤔 What could have been better?</h4>
-                <div className="reasons">
-                  {negativeReasons.map((reason) => {
-                    const isSelected = reasons.includes(reason);
-                    return (
-                      <button
-                        key={reason}
-                        onClick={() => toggleReason(reason)}
-                        className={`reasonButton amber ${isSelected ? 'selected' : ''}`}
-                      >
-                        {isSelected ? '✅ ' : ''}
-                        {reason}
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Show comment box for positive and negative, not for Neutral */}
+                {['Excellent', 'Good', 'Poor'].includes(rating) && (
+                  <div className="comment-box">
+                    <label htmlFor="additionalComment">
+                      <strong>💡 Anything else you'd like to share?</strong>
+                    </label>
+                    <br />
+                    <textarea
+                      id="additionalComment"
+                      value={additionalComment}
+                      onChange={(e) => setAdditionalComment(e.target.value)}
+                      placeholder="Type your comment here..."
+                      rows={3}
+                      style={{
+                        width: '90%',
+                        padding: '0.5rem',
+                        borderRadius: '8px',
+                        border: '1px solid #ccc',
+                        marginTop: '0.5rem',
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
 
-                <div style={{ marginTop: '1rem' }}>
-                  <label htmlFor="additionalComment">
-                    <strong>💡 Anything else you'd like to share?</strong>
-                  </label>
-                  <br />
-                  <textarea
-                    id="additionalComment"
-                    value={additionalComment}
-                    onChange={(e) => setAdditionalComment(e.target.value)}
-                    placeholder="Type your comment here..."
-                    rows={3}
-                    style={{
-                      width: '90%',
-                      padding: '0.5rem',
-                      borderRadius: '8px',
-                      border: '1px solid #ccc',
-                      marginTop: '0.5rem',
-                    }}
-                  />
-                </div>
-
-                {isSubmitting && <p style={{ color: '#007bff' }}>Submitting...</p>}
-
-                <button className="submitBtn" onClick={handleSubmit}>
+              <div className="button-row">
+                <button
+                  className="submitBtn"
+                  onClick={handleSubmit}
+                  disabled={!configReady || isSubmitting}
+                >
                   Submit
                 </button>
-                <button className="resetBtn" onClick={handleReset}>
+                <button className="resetBtn" onClick={handleReset} disabled={isSubmitting}>
                   🔄 Reset
                 </button>
               </div>
+
+              {isSubmitting && (
+                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                  <div className="spinner"></div>
+                  <p style={{ marginTop: '0.5rem', color: '#007bff' }}>Submitting...</p>
+                </div>
+              )}
             </>
           )}
         </>
       ) : (
-        <h3>🎉 Feedback submitted successfully!</h3>
+        <div className="thankYouBlock">
+          <h3>🎉 Thank you for your valuable feedback!</h3>
+          <p style={{ marginTop: '0.5rem' }}>
+            Your input helps us make every washroom visit better for everyone.
+          </p>
+        </div>
       )}
     </div>
   );
