@@ -26,10 +26,6 @@ function App() {
   const [config, setConfig] = useState({});
   const configReady = config.solution && config.device_id && config.location;
   const API_BASE = (config?.api_base || process.env.REACT_APP_API_BASE || '').replace(/\/+$/, ''); // trims trailing slash
-  if (!API_BASE) {
-    console.error('❌ Missing API_BASE. Set config.api_base or REACT_APP_API_BASE');
-  }
-  console.log('ENV REACT_APP_API_BASE:', process.env.REACT_APP_API_BASE);
   const [washroom, setWashroom] = useState('');
 
   // 🔍 Derived ID from config when available
@@ -81,9 +77,6 @@ function App() {
     };
 
     try {
-      console.log('API_BASE ->', API_BASE);
-      console.log('Full request URL ->', `${API_BASE}/submitFeedback`);
-      console.log('Payload ->', feedbackData);
       await axios.post(`${API_BASE}/submitFeedback`, feedbackData);
       setSubmitted(true);
       setRating('');
@@ -96,7 +89,18 @@ function App() {
         setSubmitted(false);
       }, 5000);
     } catch (err) {
-      console.error(err);
+      console.error('❌ Failed to submit feedback:', err);
+
+      // Optional: log extra Axios info if available
+      if (err.response) {
+        console.error('Response data:', err.response.data);
+        console.error('Status code:', err.response.status);
+        console.error('Headers:', err.response.headers);
+      } else if (err.request) {
+        console.error('No response received:', err.request);
+      } else {
+        console.error('Error setting up request:', err.message);
+      }
       alert('❌ Failed to submit feedback');
     } finally {
       setIsSubmitting(false); // hide spinner
