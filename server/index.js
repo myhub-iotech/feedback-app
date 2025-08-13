@@ -25,6 +25,7 @@ app.post('/submitFeedback', async (req, res) => {
       device_id,
       location,
       additionalComment, // ✅ NEW field
+      washroomId,
       browser, // ✅ NEW field
       hourOfDay, // ✅ NEW field
     } = req.body;
@@ -38,6 +39,7 @@ app.post('/submitFeedback', async (req, res) => {
       additionalComment,
       device_id,
       location,
+      washroomId,
       browser,
       hourOfDay,
       timestamp,

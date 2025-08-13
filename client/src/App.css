@@ -230,3 +230,70 @@
     transform: rotate(360deg);
   }
 }
+
+/* --- Washroom selector cards --- */
+.washroomFieldset {
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.25rem 0;
+  border: none;
+}
+
+.washroomLegend {
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.washroomCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 1rem;
+  justify-items: center;
+}
+
+.washroomCard {
+  width: 100%;
+  max-width: 220px;
+  text-align: center;
+  border: 1px solid #d1d5db; /* gray-300 */
+  border-radius: 16px;
+  padding: 14px 10px;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.washroomCard:hover {
+  border-color: #9ca3af; /* gray-400 */
+  transform: translateY(-1px);
+}
+
+.washroomCard.selected {
+  border-color: #10b981; /* emerald-500 */
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.washroomEmoji {
+  font-size: 2rem;
+}
+
+.washroomLabel {
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Small screens: stack vertically if very narrow */
+@media (max-width: 360px) {
+  .washroomCards {
+    grid-template-columns: 1fr;
+  }
+}

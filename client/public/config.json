@@ -1,5 +1,9 @@
 {
   "solution": "SWS",
-  "device_id": "B01_F01_WS001_USF_001",
-  "location": "B01_F01_WSR001"
+  "device_id": "USF_001",
+  "location": "B01_F01",
+  "washroom_ids": {
+    "men": "M001",
+    "women": "W001"
+  }
 }
