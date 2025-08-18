@@ -232,68 +232,79 @@
 }
 
 /* --- Washroom selector cards --- */
-.washroomFieldset {
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.25rem 0;
-  border: none;
-}
-
-.washroomLegend {
-  margin-bottom: 0.5rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #333;
-}
-
+/* ---- Responsive washroom selector ---- */
 .washroomCards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(120px, 1fr));
-  gap: 1rem;
-  justify-items: center;
+  /* 2 columns when there’s room, auto-stack to 1 on small phones */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: clamp(8px, 2vw, 16px); /* responsive spacing between the two blocks */
+  width: 100%;
 }
 
 .washroomCard {
+  box-sizing: border-box;
   width: 100%;
-  max-width: 220px;
   text-align: center;
-  border: 1px solid #d1d5db; /* gray-300 */
+  border: 1.5px solid #d1d5db; /* <-- always show a subtle outline */
   border-radius: 16px;
-  padding: 14px 10px;
   background: #fff;
-  cursor: pointer;
+  padding: 12px 10px;
   transition:
+    border-color 0.15s ease,
     box-shadow 0.15s ease,
-    transform 0.15s ease,
-    border-color 0.15s ease;
+    transform 0.15s ease;
 }
 
 .washroomCard:hover {
-  border-color: #9ca3af; /* gray-400 */
+  border-color: #9ca3af;
   transform: translateY(-1px);
 }
 
+/* Selected state: keep the base border, just accent it */
 .washroomCard.selected {
-  border-color: #10b981; /* emerald-500 */
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
-}
-
-.hiddenInput {
-  display: none;
+  border-color: #10b981; /* emerald */
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18); /* soft ring */
 }
 
 .washroomEmoji {
-  font-size: 2rem;
+  font-size: clamp(1.4rem, 4.5vw, 2rem);
 }
-
 .washroomLabel {
   margin-top: 6px;
   font-weight: 600;
-  font-size: 0.95rem;
 }
 
-/* Small screens: stack vertically if very narrow */
+/* Hide the native radio bullet but keep the input accessible */
+.hiddenInput {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Keyboard focus outline on the whole card */
+.washroomCard:has(.hiddenInput:focus-visible) {
+  outline: 3px solid rgba(16, 185, 129, 0.45);
+  outline-offset: 2px;
+}
+
+/* Ultra-narrow phones: force single column and tighten padding */
 @media (max-width: 360px) {
   .washroomCards {
     grid-template-columns: 1fr;
   }
+  .washroomCard {
+    padding: 10px;
+  }
+}
+
+/* Ensure action buttons don’t overlap on tiny screens */
+.button-row {
+  flex-wrap: wrap;
+  gap: 12px;
 }
