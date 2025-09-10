@@ -8,6 +8,8 @@ app.use(cors());
 app.use(express.json());
 
 const client = new MongoClient(process.env.MONGO_URI);
+const MISSING_REF_POLICY = (process.env.MISSING_REF_POLICY || 'ignore').toLowerCase();
+
 let collection;
 
 client.connect().then(() => {
@@ -19,16 +21,23 @@ client.connect().then(() => {
 app.post('/submitFeedback', async (req, res) => {
   try {
     const {
-      solution, // ✅ NEW field
+      solution,
       rating,
       reasons,
       device_id,
       location,
-      additionalComment, // ✅ NEW field
+      additionalComment,
       washroomId,
-      browser, // ✅ NEW field
-      hourOfDay, // ✅ NEW field
+      browser, //
+      hourOfDay,
     } = req.body;
+
+    const refId = req.body.refId || req.query.refId || null;
+    if (MISSING_REF_POLICY === 'error' && !refId) {
+      return res
+        .status(400)
+        .json({ message: 'Missing required field in request. Pls recheck and submit the form' });
+    }
 
     const timestamp = new Date();
 
@@ -42,6 +51,7 @@ app.post('/submitFeedback', async (req, res) => {
       washroomId,
       browser,
       hourOfDay,
+      refId,
       timestamp,
     });
 
