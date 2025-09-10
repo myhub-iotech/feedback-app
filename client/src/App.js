@@ -51,6 +51,10 @@ function App() {
 
   const requireRef = process.env.REACT_APP_REQUIRE_REFID === 'true';
 
+  // 🐞 Debug log to confirm what Vercel injected
+  console.log('🔍 REACT_APP_REQUIRE_REFID =', process.env.REACT_APP_REQUIRE_REFID);
+  console.log('🔍 requireRef =', requireRef);
+
   useEffect(() => {
     fetch('/config.json')
       .then((res) => res.json())
