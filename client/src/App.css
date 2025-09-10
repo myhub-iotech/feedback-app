@@ -308,3 +308,14 @@
   flex-wrap: wrap;
   gap: 12px;
 }
+
+.missing-refid {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #fff;
+  background-color: #d9534f; /* red background */
+  text-align: center;
+}

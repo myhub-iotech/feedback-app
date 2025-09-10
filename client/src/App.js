@@ -17,6 +17,22 @@ const negativeReasons = [
   'Broken Fixtures',
 ];
 
+// 🆕 Helper to read refId from URL (accepts aliases)
+function getRefIdFromUrl() {
+  try {
+    const url = new URL(window.location.href);
+    const candidates = [
+      url.searchParams.get('refId'),
+      url.searchParams.get('referenceid'),
+      url.searchParams.get('ref'),
+    ];
+    const found = candidates.find(Boolean);
+    return (found || '').trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 function App() {
   const [rating, setRating] = useState('');
   const [reasons, setReasons] = useState([]);
@@ -25,11 +41,15 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [config, setConfig] = useState({});
   const configReady = config.solution && config.device_id && config.location;
-  const API_BASE = (config?.api_base || process.env.REACT_APP_API_BASE || '').replace(/\/+$/, ''); // trims trailing slash
+  const API_BASE = (config?.api_base || process.env.REACT_APP_API_BASE || '').replace(/\/+$/, '');
   const [washroom, setWashroom] = useState('');
 
   // 🔍 Derived ID from config when available
   const washroomId = washroom && config?.washroom_ids ? config.washroom_ids[washroom] || '' : '';
+
+  const [refId] = useState(() => getRefIdFromUrl());
+
+  const requireRef = process.env.REACT_APP_REQUIRE_REFID === 'true';
 
   useEffect(() => {
     fetch('/config.json')
@@ -61,19 +81,27 @@ function App() {
       return;
     }
 
-    setIsSubmitting(true); // show loading spinner
+    // 🆕 Optional: front-end guard if you plan to enforce presence strictly
+    // If backend is set to MISSING_REF_POLICY=error, this gives instant UX:
+    if (process.env.REACT_APP_REQUIRE_REFID === 'true' && !refId) {
+      alert('This link is invalid: missing reference id. Pleas try again with valid URL / QR code');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     const feedbackData = {
-      solution: config.solution || 'SWS', // ✅ Updated field name to indicate this is coming from Smart Washroom Solution (Not Parking)
+      solution: config.solution || 'SWS',
       rating,
       reasons,
       additionalComment,
       device_id: config.device_id || 'UNKNOWN_DEVICE',
       location: config.location || 'UNKNOWN_LOCATION',
-      washroomId, // <-- pulled from config
+      washroomId, // from config
       timestamp: new Date().toISOString(),
-      browser: navigator.userAgent, // ✅ browser info
-      hourOfDay: new Date().getHours(), // ✅ time of day
+      browser: navigator.userAgent,
+      hourOfDay: new Date().getHours(),
+      refId, // 🆕 include the reference id (can be null; backend decides policy)
     };
 
     try {
@@ -82,28 +110,29 @@ function App() {
       setRating('');
       setReasons([]);
       setAdditionalComment('');
-      setWashroom(''); // ⬅️ Reset washroom selection
+      setWashroom('');
 
-      // Auto-reset after 5 seconds
       setTimeout(() => {
         setSubmitted(false);
       }, 5000);
     } catch (err) {
       console.error('❌ Failed to submit feedback:', err);
-
-      // Optional: log extra Axios info if available
       if (err.response) {
         console.error('Response data:', err.response.data);
         console.error('Status code:', err.response.status);
         console.error('Headers:', err.response.headers);
+        // 🆕 Surface backend refId errors cleanly
+        if (err.response.data?.message) alert(err.response.data.message);
+        else alert('❌ Failed to submit feedback');
       } else if (err.request) {
         console.error('No response received:', err.request);
+        alert('❌ No response from server');
       } else {
         console.error('Error setting up request:', err.message);
+        alert('❌ Failed to submit feedback');
       }
-      alert('❌ Failed to submit feedback');
     } finally {
-      setIsSubmitting(false); // hide spinner
+      setIsSubmitting(false);
     }
   };
 
@@ -112,11 +141,33 @@ function App() {
     setReasons([]);
     setAdditionalComment('');
     setSubmitted(false);
-    setWashroom(''); // ← uncomment if you want to clear the choice too
+    setWashroom('');
+    // 🆕 Do not clear refId on reset; it should stick to the kiosk/session
   };
+
+  // ✅ PLACE THE GUARD *HERE* — after all hooks, before the main return
+  if (requireRef && refId === null) {
+    return (
+      <div className="missing-refid">
+        <h2>Invalid QR Code or URL</h2>
+        <p>This link does not have a required Input. Please use the correct QR code or URL ...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="App">
+      {/* 🆕 Tiny badge so you can visually confirm which refId is active */}
+      {refId ? (
+        <div style={{ position: 'absolute', top: 8, right: 8, fontSize: 12, opacity: 0.8 }}>
+          Ref: <code>{refId}</code>
+        </div>
+      ) : (
+        <div style={{ position: 'absolute', top: 8, right: 8, fontSize: 12, opacity: 0.6 }}>
+          <em>No ref</em>
+        </div>
+      )}
+
       {!submitted ? (
         <>
           <h2>📝 How was your washroom experience?</h2>
