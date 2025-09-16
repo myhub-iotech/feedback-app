@@ -1,13 +1,13 @@
 {
   "solution": "SWS",
-  "device_id": "USF_001",
-  "location": "B01_F01",
+  "device_id": "null",
+  "location": "null",
   "washroom_ids": {
     "men": "M001",
     "women": "W001"
   },
   "features": {
-    "washroom_select": true,
+    "washroom_select": false,
     "require_refid": true
   }
 }
