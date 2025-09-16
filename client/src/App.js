@@ -165,15 +165,6 @@ function App() {
   return (
     <div className="App">
       {/* 🆕 Tiny badge so you can visually confirm which refId is active */}
-      {refId ? (
-        <div style={{ position: 'absolute', top: 8, right: 8, fontSize: 12, opacity: 0.8 }}>
-          Ref: <code>{refId}</code>
-        </div>
-      ) : (
-        <div style={{ position: 'absolute', top: 8, right: 8, fontSize: 12, opacity: 0.6 }}>
-          <em>No ref</em>
-        </div>
-      )}
 
       {!submitted ? (
         <>
