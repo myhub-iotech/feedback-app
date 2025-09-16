@@ -5,5 +5,9 @@
   "washroom_ids": {
     "men": "M001",
     "women": "W001"
+  },
+  "features": {
+    "washroom_select": true,
+    "require_refid": true
   }
 }

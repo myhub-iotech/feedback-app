@@ -45,15 +45,14 @@ function App() {
   const [washroom, setWashroom] = useState('');
 
   // 🔍 Derived ID from config when available
-  const washroomId = washroom && config?.washroom_ids ? config.washroom_ids[washroom] || '' : '';
-
+  const showWashroomSelect = config?.features?.washroom_select === true;
+  const washroomId = showWashroomSelect
+    ? washroom && config?.washroom_ids
+      ? config.washroom_ids[washroom] || ''
+      : ''
+    : '';
+  const requireRef = config?.features?.require_refid === true;
   const [refId] = useState(() => getRefIdFromUrl());
-
-  const requireRef = process.env.REACT_APP_REQUIRE_REFID === 'true';
-
-  // 🐞 Debug log to confirm what Vercel injected
-  console.log('🔍 REACT_APP_REQUIRE_REFID =', process.env.REACT_APP_REQUIRE_REFID);
-  console.log('🔍 requireRef =', requireRef);
 
   useEffect(() => {
     fetch('/config.json')
@@ -77,7 +76,8 @@ function App() {
       return;
     }
 
-    if (!washroomId) {
+    // UPDATED: Only enforce selection when the feature is enabled
+    if (showWashroomSelect && !washroomId) {
       document
         .getElementById('washroomFieldset')
         ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -87,8 +87,11 @@ function App() {
 
     // 🆕 Optional: front-end guard if you plan to enforce presence strictly
     // If backend is set to MISSING_REF_POLICY=error, this gives instant UX:
-    if (process.env.REACT_APP_REQUIRE_REFID === 'true' && !refId) {
-      alert('This link is invalid: missing reference id. Pleas try again with valid URL / QR code');
+    // Enforce refId only when enabled via config.features.require_refid
+    if (requireRef && !refId) {
+      alert(
+        'This link is invalid: missing reference id. Please try again with a valid URL / QR code.'
+      );
       return;
     }
 
@@ -101,7 +104,7 @@ function App() {
       additionalComment,
       device_id: config.device_id || 'UNKNOWN_DEVICE',
       location: config.location || 'UNKNOWN_LOCATION',
-      washroomId, // from config
+      washroomId: washroomId || null,
       timestamp: new Date().toISOString(),
       browser: navigator.userAgent,
       hourOfDay: new Date().getHours(),
@@ -267,37 +270,39 @@ function App() {
                 )}
               </div>
 
-              {/* Washroom selector — place below the comment box */}
-              <fieldset id="washroomFieldset" className="washroomFieldset">
-                <legend className="washroomLegend">Which washroom?</legend>
-                <div className="washroomCards">
-                  <label className={`washroomCard ${washroom === 'men' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="washroom"
-                      value="men"
-                      checked={washroom === 'men'}
-                      onChange={() => setWashroom('men')}
-                      className="hiddenInput"
-                    />
-                    <div className="washroomEmoji">🚹</div>
-                    <div className="washroomLabel">Men’s</div>
-                  </label>
+              {/* Washroom selector — rendered only when enabled via config */}
+              {showWashroomSelect && (
+                <fieldset id="washroomFieldset" className="washroomFieldset">
+                  <legend className="washroomLegend">Which washroom?</legend>
+                  <div className="washroomCards">
+                    <label className={`washroomCard ${washroom === 'men' ? 'selected' : ''}`}>
+                      <input
+                        type="radio"
+                        name="washroom"
+                        value="men"
+                        checked={washroom === 'men'}
+                        onChange={() => setWashroom('men')}
+                        className="hiddenInput"
+                      />
+                      <div className="washroomEmoji">🚹</div>
+                      <div className="washroomLabel">Men’s</div>
+                    </label>
 
-                  <label className={`washroomCard ${washroom === 'women' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="washroom"
-                      value="women"
-                      checked={washroom === 'women'}
-                      onChange={() => setWashroom('women')}
-                      className="hiddenInput"
-                    />
-                    <div className="washroomEmoji">🚺</div>
-                    <div className="washroomLabel">Women’s</div>
-                  </label>
-                </div>
-              </fieldset>
+                    <label className={`washroomCard ${washroom === 'women' ? 'selected' : ''}`}>
+                      <input
+                        type="radio"
+                        name="washroom"
+                        value="women"
+                        checked={washroom === 'women'}
+                        onChange={() => setWashroom('women')}
+                        className="hiddenInput"
+                      />
+                      <div className="washroomEmoji">🚺</div>
+                      <div className="washroomLabel">Women’s</div>
+                    </label>
+                  </div>
+                </fieldset>
+              )}
 
               <div className="button-row">
                 <button
