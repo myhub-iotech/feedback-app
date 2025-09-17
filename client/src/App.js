@@ -89,6 +89,19 @@ function App() {
       });
   }, []);
 
+  // ⛔ Prevent initial flash: don’t render anything until config.json is loaded
+  if (!configLoaded) {
+    // Option A: totally blank (fastest, no flicker)
+    return null;
+
+    // Option B: minimal branded loader (uncomment if you want a spinner)
+    // return (
+    //   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    //     <div className="spinner" />
+    //   </div>
+    // );
+  }
+
   const toggleReason = (reason) => {
     setReasons((prev) =>
       prev.includes(reason) ? prev.filter((r) => r !== reason) : [...prev, reason]
