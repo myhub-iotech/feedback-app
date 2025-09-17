@@ -44,15 +44,40 @@ function App() {
   const API_BASE = (config?.api_base || process.env.REACT_APP_API_BASE || '').replace(/\/+$/, '');
   const [washroom, setWashroom] = useState('');
 
+  // Whether config.json has been fetched (non-empty object), regardless of field values
+  const configLoaded = Object.keys(config || {}).length > 0;
+
   // 🔍 Derived ID from config when available
   const showWashroomSelect = config?.features?.washroom_select === true;
+  const requireRef = config?.features?.require_refid === true;
+  const [refId] = useState(() => getRefIdFromUrl());
+
+  // NEW: metadata from refId mapping (if present)
+  const refMeta = refId && config?.ref_to_washroom ? config.ref_to_washroom[refId] : null;
+
+  // Compute the washroomId we will submit
+  // - If selector is ON -> use selected radio -> config.washroom_ids[...] (as before)
+  // - If selector is OFF -> use ref mapping if available -> else '' (backend will see null)
   const washroomId = showWashroomSelect
     ? washroom && config?.washroom_ids
       ? config.washroom_ids[washroom] || ''
       : ''
-    : '';
-  const requireRef = config?.features?.require_refid === true;
-  const [refId] = useState(() => getRefIdFromUrl());
+    : refMeta?.washroomId || '';
+
+  // Optional: friendly label to display to the user
+  const effectiveWashroomLabel =
+    refMeta?.label ||
+    (showWashroomSelect && washroom
+      ? config?.washroom_labels?.[washroom] ||
+        (washroom === 'men'
+          ? 'Men’s Washroom'
+          : washroom === 'women'
+            ? 'Women’s Washroom'
+            : 'Selected Washroom')
+      : null);
+
+  // Admin contact
+  const supportPhone = config?.admin_support?.phone || null;
 
   useEffect(() => {
     fetch('/config.json')
@@ -153,13 +178,62 @@ function App() {
   };
 
   // ✅ PLACE THE GUARD *HERE* — after all hooks, before the main return
-  if (requireRef && refId === null) {
-    return (
-      <div className="missing-refid">
-        <h2>Invalid QR Code or URL</h2>
-        <p>This link does not have a required Input. Please use the correct QR code or URL ...</p>
-      </div>
-    );
+  // Block the entire form when refId is required and selector is OFF
+  if (!showWashroomSelect && requireRef) {
+    // wait for config first to avoid flicker
+    if (!configLoaded) return null;
+
+    const hasRef = Boolean(refId);
+    const hasMapping = Boolean(refMeta);
+
+    if (!hasRef || !hasMapping) {
+      const reason = !hasRef ? 'missing reference' : 'unrecognized reference';
+      return (
+        <div
+          className="missing-refid"
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#8B0000',
+            color: '#fff',
+            textAlign: 'center',
+            padding: '24px',
+          }}
+        >
+          <div style={{ maxWidth: 720 }}>
+            <h2 style={{ marginBottom: 16 }}>😔 Sorry, something went wrong</h2>
+
+            <p style={{ opacity: 0.95, lineHeight: 1.6, marginBottom: 14 }}>
+              We truly value your feedback and want to make every washroom visit better.
+            </p>
+
+            <p style={{ opacity: 0.95, lineHeight: 1.6, marginBottom: 14 }}>
+              Unfortunately, we couldn’t identify the correct washroom from this request.
+            </p>
+
+            <p style={{ opacity: 0.95, lineHeight: 1.6 }}>
+              👉 If you scanned a QR code, please retry the one posted at the washroom entrance.{' '}
+              <br />
+              👉 If you opened this link from another source, ensure it includes a valid reference.
+              {supportPhone ? (
+                <>
+                  <br />
+                  📞 Need further help? Call Facilities at{' '}
+                  <a
+                    href={`tel:${supportPhone.replace(/\s+/g, '')}`}
+                    style={{ color: '#fff', textDecoration: 'underline' }}
+                  >
+                    {supportPhone}
+                  </a>
+                </>
+              ) : null}
+            </p>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (
@@ -169,6 +243,42 @@ function App() {
       {!submitted ? (
         <>
           <h2>📝 How was your washroom experience?</h2>
+          {/* Washroom confirmation banner */}
+          {effectiveWashroomLabel && (
+            <div
+              className="infoBanner"
+              style={{
+                margin: '8px 0 14px',
+                padding: '10px 12px',
+                borderRadius: 8,
+                background: '#f4f8ff',
+                border: '1px solid #d8e6ff',
+                fontSize: 14,
+                lineHeight: 1.4,
+              }}
+            >
+              <strong>Feedback for:</strong>{' '}
+              <span style={{ fontWeight: 'bold', color: '#1a3d8f' }}>{effectiveWashroomLabel}</span>
+              <br />
+              <em style={{ opacity: 0.9 }}>
+                If this isn’t the correct washroom, please scan the right QR code or check the link.
+                {supportPhone && (
+                  <>
+                    {' '}
+                    Need further help? Call Facilities at{' '}
+                    <a
+                      href={`tel:${supportPhone.replace(/\s+/g, '')}`}
+                      style={{ textDecoration: 'underline', color: '#1a3d8f' }}
+                    >
+                      {supportPhone}
+                    </a>
+                    .
+                  </>
+                )}
+              </em>
+            </div>
+          )}
+
           <div className="smileys">
             {[
               { emoji: '😄', label: 'Excellent', value: 'Excellent' },
