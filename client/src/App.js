@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
+import { useRefCheck } from './hooks/useRefCheck';
 
 const positiveReasons = [
   'Overall Experience was Great',
@@ -16,6 +17,100 @@ const negativeReasons = [
   'Bad Odor',
   'Broken Fixtures',
 ];
+
+const FRIENDLY = {
+  MISSING_REFID: {
+    title: "Sorry, we couldn't load the Feedback App",
+    icon: '❌',
+    lead: 'The link is missing a required reference.',
+    bullets: [
+      'If using a QR code, try rescanning the QR code at the washroom entrance.',
+      'If using a saved link, retry with the latest valid link.',
+    ],
+  },
+  INVALID_REFID: {
+    title: "Sorry, we couldn't load the Feedback App",
+    icon: '❌',
+    lead: 'Unable to identify the correct washroom from the link. We would love to hear from you though...',
+    bullets: [
+      'If using a QR code, try rescanning the QR code at the washroom entrance.',
+      'If using a saved link, retry with the latest valid link.',
+    ],
+  },
+  VALIDATOR_UNAVAILABLE: {
+    title: "Sorry, we couldn't load the Feedback App",
+    icon: '🔌',
+    lead: 'Our validation service is temporarily unavailable.',
+    bullets: ['Check your connection and retry.', 'If it persists, please inform Facilities.'],
+  },
+  TIMEOUT: {
+    title: "Sorry, we couldn't load the Feedback App",
+    icon: '🔌',
+    lead: 'Validation took longer than expected.',
+    bullets: ['Check your connection and retry.', 'If it persists, please inform Facilities.'],
+  },
+  UPSTREAM: {
+    title: "Sorry, we couldn't load the Feedback App",
+    icon: '🚧',
+    lead: 'Service is temporarily unavailable.',
+    bullets: ['Refresh this page and try again.', 'If the problem continues, contact Facilities.'],
+  },
+  EXCEPTION: {
+    title: "Sorry, we couldn't load the Feedback App",
+    icon: '❌',
+    lead: 'An unexpected error occurred.',
+    bullets: ['Refresh this page and try again.', 'If the problem continues, contact Facilities.'],
+  },
+  DEFAULT: {
+    title: "Sorry, we couldn't load the Feedback App",
+    icon: '❌',
+    lead: 'Please try again.',
+    bullets: ['Refresh this page and try again.', 'If the problem continues, contact Facilities.'],
+  },
+};
+
+function FriendlyError({ code, supportPhone, variant = 'card' }) {
+  const c = FRIENDLY[code] || FRIENDLY.DEFAULT;
+  const hotline = supportPhone || '+91 90000 99999';
+
+  if (variant === 'card') {
+    return (
+      <div className="error-wrap error-card--stripe">
+        <div className="error-card">
+          <h1>🥲 {c.title}</h1>
+          <p className="lead">
+            <span className="icon" aria-hidden>
+              {c.icon || '❌'}
+            </span>
+            <span>{c.lead}</span>
+          </p>
+          {c.bullets?.length > 0 && (
+            <ul>
+              {c.bullets.map((b, i) => (
+                <li key={i}>👉 {b}</li>
+              ))}
+            </ul>
+          )}
+          {hotline && (
+            <p className="muted">
+              📞 Need further help? Call Facilities at{' '}
+              <a href={`tel:${String(hotline).replace(/\s+/g, '')}`}>{hotline}</a>
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+}
+
+function TopProgress({ visible }) {
+  if (!visible) return null;
+  return (
+    <div className="top-progress">
+      <div className="bar" />
+    </div>
+  );
+}
 
 // 🆕 Helper to read refId from URL (accepts aliases)
 function getRefIdFromUrl() {
@@ -52,8 +147,8 @@ function App() {
   const requireRef = config?.features?.require_refid === true;
   const [refId] = useState(() => getRefIdFromUrl());
 
-  // NEW: metadata from refId mapping (if present)
-  const refMeta = refId && config?.ref_to_washroom ? config.ref_to_washroom[refId] : null;
+  const refState = useRefCheck(refId); // calls /api/ref/validate under the hood
+  const backendLabel = refState.status === 'ok' ? refState.data?.label : null;
 
   // Compute the washroomId we will submit
   // - If selector is ON -> use selected radio -> config.washroom_ids[...] (as before)
@@ -62,11 +157,11 @@ function App() {
     ? washroom && config?.washroom_ids
       ? config.washroom_ids[washroom] || ''
       : ''
-    : refMeta?.washroomId || '';
+    : '';
 
   // Optional: friendly label to display to the user
   const effectiveWashroomLabel =
-    refMeta?.label ||
+    backendLabel ||
     (showWashroomSelect && washroom
       ? config?.washroom_labels?.[washroom] ||
         (washroom === 'men'
@@ -150,32 +245,48 @@ function App() {
     };
 
     try {
-      await axios.post(`${API_BASE}/submitFeedback`, feedbackData);
+      console.log('[submit] ➜ POST', `${API_BASE}/submitFeedback`);
+      console.log('[submit] body →', feedbackData);
+
+      const resp = await axios.post(`${API_BASE}/submitFeedback`, feedbackData, { timeout: 5000 });
+
+      console.log('[submit] ⇦ status', resp.status);
+      console.log('[submit] ⇦ data  ', resp?.data);
+
+      const { ok, code, message } = resp?.data || {};
+      if (!ok) {
+        const ErrorCopy = {
+          MISSING_REFID: 'Please scan a valid QR code to continue.',
+          INVALID_REFID: 'This washroom is not recognized or inactive.',
+          VALIDATOR_UNAVAILABLE: 'Can’t validate right now. Please try again.',
+          TIMEOUT: 'Validation timed out. Please retry.',
+          UPSTREAM: 'Service temporarily unavailable.',
+          EXCEPTION: 'Something went wrong. Please retry.',
+          SERVER_ERROR: 'Server error. Please try again.',
+        };
+        const friendly = ErrorCopy[code] || message || 'Could not submit feedback';
+        console.log('[submit] handled error →', code, message);
+        alert(friendly);
+        return; // don’t clear the form on handled errors
+      }
+
+      // ✅ success
       setSubmitted(true);
       setRating('');
       setReasons([]);
       setAdditionalComment('');
       setWashroom('');
-
-      setTimeout(() => {
-        setSubmitted(false);
-      }, 5000);
+      setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {
-      console.error('❌ Failed to submit feedback:', err);
+      // only unexpected network/server errors land here
+      console.log('[submit] ✗ exception', err?.message || err);
       if (err.response) {
-        console.error('Response data:', err.response.data);
-        console.error('Status code:', err.response.status);
-        console.error('Headers:', err.response.headers);
-        // 🆕 Surface backend refId errors cleanly
-        if (err.response.data?.message) alert(err.response.data.message);
-        else alert('❌ Failed to submit feedback');
+        console.log('[submit] ✗ response.status', err.response.status);
+        console.log('[submit] ✗ response.data  ', err.response.data);
       } else if (err.request) {
-        console.error('No response received:', err.request);
-        alert('❌ No response from server');
-      } else {
-        console.error('Error setting up request:', err.message);
-        alert('❌ Failed to submit feedback');
+        console.log('[submit] ✗ no response', err.request);
       }
+      alert('❌ Network or server error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -190,62 +301,15 @@ function App() {
     // 🆕 Do not clear refId on reset; it should stick to the kiosk/session
   };
 
-  // ✅ PLACE THE GUARD *HERE* — after all hooks, before the main return
-  // Block the entire form when refId is required and selector is OFF
+  // ✅ Backend-gated render (prevents emoji flicker)
   if (!showWashroomSelect && requireRef) {
-    // wait for config first to avoid flicker
-    if (!configLoaded) return null;
-
-    const hasRef = Boolean(refId);
-    const hasMapping = Boolean(refMeta);
-
-    if (!hasRef || !hasMapping) {
-      const reason = !hasRef ? 'missing reference' : 'unrecognized reference';
-      return (
-        <div
-          className="missing-refid"
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#8B0000',
-            color: '#fff',
-            textAlign: 'center',
-            padding: '24px',
-          }}
-        >
-          <div style={{ maxWidth: 720 }}>
-            <h2 style={{ marginBottom: 16 }}>😔 Sorry, something went wrong</h2>
-
-            <p style={{ opacity: 0.95, lineHeight: 1.6, marginBottom: 14 }}>
-              We truly value your feedback and want to make every washroom visit better.
-            </p>
-
-            <p style={{ opacity: 0.95, lineHeight: 1.6, marginBottom: 14 }}>
-              Unfortunately, we couldn’t identify the correct washroom from this request.
-            </p>
-
-            <p style={{ opacity: 0.95, lineHeight: 1.6 }}>
-              👉 If you scanned a QR code, please retry the one posted at the washroom entrance.{' '}
-              <br />
-              👉 If you opened this link from another source, ensure it includes a valid reference.
-              {supportPhone ? (
-                <>
-                  <br />
-                  📞 Need further help? Call Facilities at{' '}
-                  <a
-                    href={`tel:${supportPhone.replace(/\s+/g, '')}`}
-                    style={{ color: '#fff', textDecoration: 'underline' }}
-                  >
-                    {supportPhone}
-                  </a>
-                </>
-              ) : null}
-            </p>
-          </div>
-        </div>
-      );
+    if (!configLoaded || refState.status === 'loading') {
+      // subtle loading: just the top bar, keep normal page background
+      return <TopProgress visible />;
+    }
+    if (refState.status === 'error') {
+      // centered red-tinted card on the same background — no color jump
+      return <FriendlyError code={refState.code} supportPhone={supportPhone} variant="card" />;
     }
   }
 

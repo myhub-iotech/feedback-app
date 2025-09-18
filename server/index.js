@@ -2,10 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const refRoutes = require('./refRoutes');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/api/ref', refRoutes);
 
 const client = new MongoClient(process.env.MONGO_URI);
 const MISSING_REF_POLICY = (process.env.MISSING_REF_POLICY || 'ignore').toLowerCase();
@@ -24,24 +26,48 @@ app.post('/submitFeedback', async (req, res) => {
       solution,
       rating,
       reasons,
+      additionalComment,
       device_id,
       location,
-      additionalComment,
       washroomId,
-      browser, //
+      browser,
       hourOfDay,
-    } = req.body;
+      refId,
+    } = req.body || {};
 
-    const refId = req.body.refId || req.query.refId || null;
+    console.log('[submit] start', {
+      ip: req.ip,
+      ua: req.headers['user-agent'],
+      bodyKeys: Object.keys(req.body || {}),
+    });
+
+    // If you enforce a refId, keep this branch; otherwise leave as 'ignore'
+    console.log('[submit] refId', { refId, missingRefPolicy: MISSING_REF_POLICY });
     if (MISSING_REF_POLICY === 'error' && !refId) {
+      return res.json({
+        ok: false,
+        code: 'MISSING_REFID',
+        message: 'Missing required field in request.',
+      });
+    }
+
+    if (!collection) {
       return res
-        .status(400)
-        .json({ message: 'Missing required field in request. Pls recheck and submit the form' });
+        .status(503)
+        .json({ ok: false, code: 'DB_NOT_READY', message: 'Database not ready' });
     }
 
     const timestamp = new Date();
 
-    await collection.insertOne({
+    console.log('[submit] insert', {
+      rating,
+      reasonsCount: Array.isArray(reasons) ? reasons.length : 0,
+      location,
+      washroomId,
+      refId,
+    });
+
+    const result = await collection.insertOne({
       solution,
       rating,
       reasons,
@@ -55,10 +81,14 @@ app.post('/submitFeedback', async (req, res) => {
       timestamp,
     });
 
-    res.status(200).json({ message: 'Feedback submitted successfully' });
-  } catch (error) {
-    console.error('Insert Error', error);
-    res.status(500).json({ error: 'Failed to submit feedback' });
+    console.log('[submit] inserted', { id: String(result.insertedId) });
+
+    return res.json({ ok: true, code: 'OK', data: { id: String(result.insertedId) } });
+  } catch (err) {
+    console.error('[submit] server error', err);
+    return res
+      .status(500)
+      .json({ ok: false, code: 'SERVER_ERROR', message: 'Failed to submit feedback' });
   }
 });
 

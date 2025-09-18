@@ -319,3 +319,202 @@
   background-color: #d9534f; /* red background */
   text-align: center;
 }
+
+/* Full-page red background for errors */
+.error-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #7a0d0d; /* rich red to match your screenshot */
+  padding: 24px;
+}
+
+/* Centered “hero” text on red background */
+.error-hero {
+  max-width: 760px;
+  width: 100%;
+  text-align: left; /* or center if you prefer */
+  color: #fff;
+  line-height: 1.6;
+}
+
+.error-hero h1 {
+  margin: 0 0 12px;
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: 0.2px;
+}
+
+.error-hero p {
+  margin: 10px 0;
+  font-size: 16px;
+  color: #ffe9e9; /* soft white for body text */
+}
+
+.error-hero ul {
+  margin: 12px 0 8px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.error-hero li {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.error-hero a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.error-hero .muted {
+  color: #ffdede;
+  opacity: 0.95;
+  margin-top: 12px;
+  font-size: 15px;
+}
+
+/* Thin indeterminate progress bar at top */
+.top-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+}
+.top-progress .bar {
+  height: 100%;
+  width: 30%;
+  animation: indeterminate 1.2s infinite;
+}
+
+/* Colors (tweak to brand) */
+.top-progress {
+  background: transparent;
+}
+.top-progress .bar {
+  background: #22c55e;
+} /* green; change if you like */
+
+/* Sweep animation */
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+/* Lead line under the title (with icon) */
+.error-hero .lead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 10px 0 12px;
+  font-size: 16px;
+  color: #ffe9e9; /* same tone as your body text */
+}
+.error-hero .lead .icon {
+  font-size: 18px; /* a tad larger than text */
+  line-height: 1;
+}
+
+/* Center wrapper for the error card */
+.error-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: transparent; /* keep your normal app bg (white) */
+}
+
+/* The card itself (pale red) */
+/* vivid error theme */
+:root {
+  --err-bg-1: #fff1f2; /* rose-50 */
+  --err-bg-2: #ffe4e6; /* rose-100 */
+  --err-border: #fda4af; /* rose-300 */
+  --err-text: #7a0d0d; /* deep red text */
+  --err-accent: #e11d48; /* rose-600 */
+  --err-shadow: rgba(225, 29, 72, 0.18);
+}
+
+.error-card {
+  max-width: 760px;
+  width: 100%;
+  background: linear-gradient(180deg, var(--err-bg-1) 0%, var(--err-bg-2) 100%);
+  border: 1px solid var(--err-border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 12px 40px var(--err-shadow);
+  color: var(--err-text);
+}
+
+.error-card h1 {
+  margin: 0 0 10px;
+  font-weight: 800;
+  font-size: 26px;
+  color: var(--err-text);
+}
+.error-card .lead {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 10px 0 12px;
+  font-size: 16px;
+  color: var(--err-text);
+}
+.error-card .icon {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--err-accent);
+}
+.error-card ul {
+  margin: 10px 0 6px;
+  padding-left: 0;
+  list-style: none;
+}
+.error-card li {
+  margin: 6px 0;
+  font-size: 16px;
+}
+.error-card a {
+  color: var(--err-text);
+  text-decoration: underline;
+}
+.error-card .muted {
+  color: var(--err-text);
+  opacity: 0.8;
+  margin-top: 10px;
+}
+
+.error-card {
+  animation: fadeIn 0.12s ease-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.error-card--stripe {
+  position: relative;
+}
+.error-card--stripe::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 16px 0 0 16px;
+  background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%); /* rose-400 → 600 */
+}

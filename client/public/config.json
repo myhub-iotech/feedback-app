@@ -6,24 +6,6 @@
     "men": "M001",
     "women": "W001"
   },
-  "ref_to_washroom": {
-    "B01-F00-M01": {
-      "washroomId": "B01-00-M01",
-      "label": "Building 01 - Ground Floor – Men’s Washroom"
-    },
-    "B01-F00-W01": {
-      "washroomId": "B01-00-W01",
-      "label": "Building 01 - Ground Floor – Women’s Washroom"
-    },
-    "B01-F01-M01": {
-      "washroomId": "B01-01-M01",
-      "label": "Building 01 - First Floor – Men’s Washroom"
-    },
-    "B01-F01-W01": {
-      "washroomId": "B01-01-W01",
-      "label": "Building 01 - First Floor – Women’s Washroom"
-    }
-  },
   "admin_support": {
     "phone": "+91 90000 99999"
   },
