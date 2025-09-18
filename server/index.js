@@ -2,12 +2,24 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
-const refRoutes = require('./refRoutes');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/api/ref', refRoutes);
+
+let refRoutes;
+try {
+  refRoutes = require('./refRoutes'); // <-- case-sensitive on Linux/Render
+  app.use('/api/ref', refRoutes);
+  console.log('[boot] refRoutes mounted');
+} catch (e) {
+  console.error('[boot] FAILED to mount refRoutes:', e);
+
+  // Optional: temporary diagnostic endpoint so you don't get a 404
+  app.get('/api/ref/validate', (_req, res) => {
+    res.status(500).json({ ok: false, code: 'ROUTE_IMPORT_FAILED', message: String(e) });
+  });
+}
 
 const client = new MongoClient(process.env.MONGO_URI);
 const MISSING_REF_POLICY = (process.env.MISSING_REF_POLICY || 'ignore').toLowerCase();
