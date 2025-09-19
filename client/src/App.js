@@ -111,14 +111,8 @@ function SubmissionNotice({ variant = 'positive', washroomLabel, onClose }) {
 
         <p className="submit-text">
           {isPositive
-            ? 'Small signals like this drive big improvements.'
-            : 'We value your feedback and will work to improve your next visit.'}
-          {washroomLabel && (
-            <>
-              {' '}
-              <span className="submit-washroom">({washroomLabel})</span>
-            </>
-          )}
+            ? 'We value your feedback. Your feedback helps us keep standards high.'
+            : 'We value your feedback. We will work to improve your next visit.'}
         </p>
 
         <div className="submit-actions">

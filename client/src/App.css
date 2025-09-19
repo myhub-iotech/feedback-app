@@ -555,23 +555,22 @@ body {
 .hero > img.hero-logo:first-child {
   justify-self: start;
 }
+
+/* Right block stays inline, but can shrink now */
 .hero-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px; /* a touch more room */
+  white-space: nowrap;
+  text-align: right;
   justify-self: end;
+  min-width: 0;
 }
 
 /* IMPORTANT: allow grid children to shrink */
 .hero-right,
 .hero-title {
   min-width: 0;
-}
-
-/* Right block stays inline, but can shrink now */
-.hero-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  text-align: right;
 }
 
 html,
@@ -593,9 +592,26 @@ body {
 
 /* Label tone */
 .hero-powered {
-  color: #6b7280;
-  font-size: 14px;
-  line-height: 1;
+  background: linear-gradient(90deg, #64748b, #0ea5e9 60%, #22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* keeps the gradient visible */
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hero-powered::after {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  margin-left: 8px;
+  margin-right: 2px;
+  background: #e5e7eb; /* slate-200 */
+  vertical-align: middle;
+  border-radius: 1px;
 }
 
 /* Center title */
