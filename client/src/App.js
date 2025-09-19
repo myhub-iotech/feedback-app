@@ -41,13 +41,13 @@ const FRIENDLY = {
     title: "Sorry, we couldn't load the Feedback App",
     icon: '🔌',
     lead: 'Our validation service is temporarily unavailable.',
-    bullets: ['Check your connection and retry.', 'If it persists, please inform Facilities.'],
+    bullets: ['Check your connection and retry.', 'If the problem continues, contact Facilities.'],
   },
   TIMEOUT: {
     title: "Sorry, we couldn't load the Feedback App",
     icon: '🔌',
     lead: 'Validation took longer than expected.',
-    bullets: ['Check your connection and retry.', 'If it persists, please inform Facilities.'],
+    bullets: ['Check your connection and retry.', 'If the problem continues, contact Facilities.'],
   },
   UPSTREAM: {
     title: "Sorry, we couldn't load the Feedback App",
@@ -69,14 +69,76 @@ const FRIENDLY = {
   },
 };
 
+function SubmissionNotice({ variant = 'positive', washroomLabel, onClose }) {
+  // Auto dismiss after 4s; can also be closed via button
+  useEffect(() => {
+    const t = setTimeout(() => onClose?.(), 4000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  const isPositive = variant === 'positive';
+
+  return (
+    <div className="submit-wrap">
+      {/* subtle top confetti only for positive */}
+      {isPositive && (
+        <div className="burst" aria-hidden>
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+      )}
+
+      <div
+        className={`submit-card ${isPositive ? 'positive' : 'neutral'}`}
+        role="status"
+        aria-live="polite"
+      >
+        <div className={`submit-icon ${isPositive ? 'ok' : 'neutral'}`} aria-hidden>
+          {/* tiny animated check – same for both, just different tint */}✓
+        </div>
+
+        <h3 className="submit-title">
+          {isPositive ? 'Thank You! Your feedback was sent.' : 'Thank You! Your feedback was sent.'}
+        </h3>
+
+        <p className="submit-text">
+          {isPositive
+            ? 'Small signals like this drive big improvements.'
+            : 'We value your feedback and will work to improve your next visit.'}
+          {washroomLabel && (
+            <>
+              {' '}
+              <span className="submit-washroom">({washroomLabel})</span>
+            </>
+          )}
+        </p>
+
+        <div className="submit-actions">
+          <button className="submit-close" onClick={() => onClose?.()}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FriendlyError({ code, supportPhone, variant = 'card' }) {
   const c = FRIENDLY[code] || FRIENDLY.DEFAULT;
   const hotline = supportPhone || '+91 90000 99999';
 
   if (variant === 'card') {
     return (
-      <div className="error-wrap error-card--stripe">
-        <div className="error-card">
+      <div className="error-wrap">
+        <div className="error-card error-card--stripe" role="alert" aria-live="polite">
           <h1>🥲 {c.title}</h1>
           <p className="lead">
             <span className="icon" aria-hidden>
@@ -128,6 +190,48 @@ function getRefIdFromUrl() {
   }
 }
 
+// catchy, compact title with a tiny badge
+const HEADER_TITLE = (
+  <>
+    <span className="sparkle" aria-hidden>
+      ✨
+    </span>
+    <span className="title-text">Share your washroom feedback</span>
+  </>
+);
+
+function AppHeader() {
+  return (
+    <div className="hero">
+      {/* LEFT: client (Sigma AVIT) */}
+      <img
+        src="/logos/sigma.png"
+        alt="Sigma AVIT"
+        className="hero-logo hero-logo--slim"
+        width="1435"
+        height="300"
+        decoding="async"
+      />
+
+      {/* CENTER: common heading */}
+      <h1 className="hero-title">{HEADER_TITLE}</h1>
+
+      {/* RIGHT: powered by myHuB */}
+      <div className="hero-right" aria-label="Powered by myHuB">
+        <span className="hero-powered">Powered by</span>
+        <img
+          src="/logos/myhub.png"
+          alt="myHuB"
+          className="hero-logo"
+          width="768"
+          height="768"
+          decoding="async"
+        />
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [rating, setRating] = useState('');
   const [reasons, setReasons] = useState([]);
@@ -138,6 +242,7 @@ function App() {
   const configReady = config.solution && config.device_id && config.location;
   const API_BASE = (config?.api_base || process.env.REACT_APP_API_BASE || '').replace(/\/+$/, '');
   const [washroom, setWashroom] = useState('');
+  const [lastRating, setLastRating] = useState(null);
 
   // Whether config.json has been fetched (non-empty object), regardless of field values
   const configLoaded = Object.keys(config || {}).length > 0;
@@ -209,7 +314,7 @@ function App() {
       return;
     }
 
-    // UPDATED: Only enforce selection when the feature is enabled
+    // Only enforce selection when the feature is enabled
     if (showWashroomSelect && !washroomId) {
       document
         .getElementById('washroomFieldset')
@@ -218,9 +323,7 @@ function App() {
       return;
     }
 
-    // 🆕 Optional: front-end guard if you plan to enforce presence strictly
-    // If backend is set to MISSING_REF_POLICY=error, this gives instant UX:
-    // Enforce refId only when enabled via config.features.require_refid
+    // Optional: front-end guard if you enforce presence strictly
     if (requireRef && !refId) {
       alert(
         'This link is invalid: missing reference id. Please try again with a valid URL / QR code.'
@@ -241,7 +344,7 @@ function App() {
       timestamp: new Date().toISOString(),
       browser: navigator.userAgent,
       hourOfDay: new Date().getHours(),
-      refId, // 🆕 include the reference id (can be null; backend decides policy)
+      refId, // include the reference id (can be null; backend decides policy)
     };
 
     try {
@@ -270,13 +373,21 @@ function App() {
         return; // don’t clear the form on handled errors
       }
 
-      // ✅ success
-      setSubmitted(true);
+      // ✅ SUCCESS
+      setLastRating(rating); // NEW: remember selection for the notice
+      setSubmitted(true); // show <SubmissionNotice … />
+
+      // clear the form for the next session
       setRating('');
       setReasons([]);
       setAdditionalComment('');
       setWashroom('');
-      setTimeout(() => setSubmitted(false), 5000);
+
+      // ❌ REMOVE the old auto-hide timer; the notice handles its own close
+      // setTimeout(() => setSubmitted(false), 5000);
+
+      // (optional) bring the notice into view on mobile
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       // only unexpected network/server errors land here
       console.log('[submit] ✗ exception', err?.message || err);
@@ -304,12 +415,24 @@ function App() {
   // ✅ Backend-gated render (prevents emoji flicker)
   if (!showWashroomSelect && requireRef) {
     if (!configLoaded || refState.status === 'loading') {
-      // subtle loading: just the top bar, keep normal page background
-      return <TopProgress visible />;
+      return (
+        <>
+          <AppHeader />
+          <main className="page">
+            <TopProgress visible />
+          </main>
+        </>
+      );
     }
     if (refState.status === 'error') {
-      // centered red-tinted card on the same background — no color jump
-      return <FriendlyError code={refState.code} supportPhone={supportPhone} variant="card" />;
+      return (
+        <>
+          <AppHeader />
+          <main className="page">
+            <FriendlyError code={refState.code} supportPhone={supportPhone} variant="card" />
+          </main>
+        </>
+      );
     }
   }
 
@@ -319,198 +442,204 @@ function App() {
 
       {!submitted ? (
         <>
-          <h2>📝 How was your washroom experience?</h2>
-          {/* Washroom confirmation banner */}
-          {effectiveWashroomLabel && (
-            <div
-              className="infoBanner"
-              style={{
-                margin: '8px 0 14px',
-                padding: '10px 12px',
-                borderRadius: 8,
-                background: '#f4f8ff',
-                border: '1px solid #d8e6ff',
-                fontSize: 14,
-                lineHeight: 1.4,
-              }}
-            >
-              <strong>Feedback for:</strong>{' '}
-              <span style={{ fontWeight: 'bold', color: '#1a3d8f' }}>{effectiveWashroomLabel}</span>
-              <br />
-              <em style={{ opacity: 0.9 }}>
-                If this isn’t the correct washroom, please scan the right QR code or check the link.
-                {supportPhone && (
-                  <>
-                    {' '}
-                    Need further help? Call Facilities at{' '}
-                    <a
-                      href={`tel:${supportPhone.replace(/\s+/g, '')}`}
-                      style={{ textDecoration: 'underline', color: '#1a3d8f' }}
-                    >
-                      {supportPhone}
-                    </a>
-                    .
-                  </>
-                )}
-              </em>
-            </div>
-          )}
+          <AppHeader />
 
-          <div className="smileys">
-            {[
-              { emoji: '😄', label: 'Excellent', value: 'Excellent' },
-              { emoji: '🙂', label: 'Satisfactory', value: 'Good' },
-              { emoji: '🙁', label: 'Unsatisfactory', value: 'Poor' },
-            ].map((item) => (
-              <div key={item.value} className="smileyOption">
-                <button
-                  onClick={() => {
-                    setRating(item.value);
-                    setReasons([]);
-                    setAdditionalComment('');
-                  }}
-                  className={rating === item.value ? 'selected' : ''}
-                >
-                  {item.emoji}
-                </button>
-                <div className="smileyLabel">{item.label}</div>
+          <main className="page">
+            {/* Washroom confirmation banner */}
+            {effectiveWashroomLabel && (
+              <div
+                className="infoBanner"
+                style={{
+                  margin: '8px 0 14px',
+                  padding: '10px 12px',
+                  borderRadius: 8,
+                  background: '#f4f8ff',
+                  border: '1px solid #d8e6ff',
+                  fontSize: 14,
+                  lineHeight: 1.4,
+                }}
+              >
+                <strong>Feedback for:</strong>{' '}
+                <span style={{ fontWeight: 'bold', color: '#1a3d8f' }}>
+                  {effectiveWashroomLabel}
+                </span>
+                <br />
+                <em style={{ opacity: 0.9 }}>
+                  If this isn’t the correct washroom, please scan the right QR code or check the
+                  link.
+                  {supportPhone && (
+                    <>
+                      {' '}
+                      Need further help? Call Facilities at{' '}
+                      <a
+                        href={`tel:${supportPhone.replace(/\s+/g, '')}`}
+                        style={{ textDecoration: 'underline', color: '#1a3d8f' }}
+                      >
+                        {supportPhone}
+                      </a>
+                      .
+                    </>
+                  )}
+                </em>
               </div>
-            ))}
-          </div>
+            )}
 
-          {rating && (
-            <>
-              <div className="feedbackGrid">
-                {['Excellent', 'Good'].includes(rating) && (
-                  <div className="feedbackColumn">
-                    <h4>👍 What you liked most?</h4>
-                    <div className="reasons">
-                      {positiveReasons.map((reason) => {
-                        const isSelected = reasons.includes(reason);
-                        return (
-                          <button
-                            key={reason}
-                            onClick={() => toggleReason(reason)}
-                            className={`reasonButton green ${isSelected ? 'selected' : ''}`}
-                          >
-                            {isSelected ? '✅ ' : ''}
-                            {reason}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {['Poor'].includes(rating) && (
-                  <div className="feedbackColumn">
-                    <h4>🤔 What could have been better?</h4>
-                    <div className="reasons">
-                      {negativeReasons.map((reason) => {
-                        const isSelected = reasons.includes(reason);
-                        return (
-                          <button
-                            key={reason}
-                            onClick={() => toggleReason(reason)}
-                            className={`reasonButton amber ${isSelected ? 'selected' : ''}`}
-                          >
-                            {isSelected ? '✅ ' : ''}
-                            {reason}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Show comment box for positive and negative, not for Neutral */}
-                {['Excellent', 'Good', 'Poor'].includes(rating) && (
-                  <div className="comment-box">
-                    <label htmlFor="additionalComment">
-                      <strong>💡 Anything else you'd like to share?</strong>
-                    </label>
-                    <br />
-                    <textarea
-                      id="additionalComment"
-                      value={additionalComment}
-                      onChange={(e) => setAdditionalComment(e.target.value)}
-                      placeholder="Type your comment here..."
-                      rows={3}
-                      style={{
-                        width: '90%',
-                        padding: '0.5rem',
-                        borderRadius: '8px',
-                        border: '1px solid #ccc',
-                        marginTop: '0.5rem',
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Washroom selector — rendered only when enabled via config */}
-              {showWashroomSelect && (
-                <fieldset id="washroomFieldset" className="washroomFieldset">
-                  <legend className="washroomLegend">Which washroom?</legend>
-                  <div className="washroomCards">
-                    <label className={`washroomCard ${washroom === 'men' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="washroom"
-                        value="men"
-                        checked={washroom === 'men'}
-                        onChange={() => setWashroom('men')}
-                        className="hiddenInput"
-                      />
-                      <div className="washroomEmoji">🚹</div>
-                      <div className="washroomLabel">Men’s</div>
-                    </label>
-
-                    <label className={`washroomCard ${washroom === 'women' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="washroom"
-                        value="women"
-                        checked={washroom === 'women'}
-                        onChange={() => setWashroom('women')}
-                        className="hiddenInput"
-                      />
-                      <div className="washroomEmoji">🚺</div>
-                      <div className="washroomLabel">Women’s</div>
-                    </label>
-                  </div>
-                </fieldset>
-              )}
-
-              <div className="button-row">
-                <button
-                  className="submitBtn"
-                  onClick={handleSubmit}
-                  disabled={!configReady || isSubmitting}
-                >
-                  Submit
-                </button>
-                <button className="resetBtn" onClick={handleReset} disabled={isSubmitting}>
-                  🔄 Reset
-                </button>
-              </div>
-
-              {isSubmitting && (
-                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                  <div className="spinner"></div>
-                  <p style={{ marginTop: '0.5rem', color: '#007bff' }}>Submitting...</p>
+            {/* Emoji row */}
+            <div className="smileys">
+              {[
+                { emoji: '😄', label: 'Excellent', value: 'Excellent' },
+                { emoji: '🙂', label: 'Satisfactory', value: 'Good' },
+                { emoji: '🙁', label: 'Unsatisfactory', value: 'Poor' },
+              ].map((item) => (
+                <div key={item.value} className="smileyOption">
+                  <button
+                    onClick={() => {
+                      setRating(item.value);
+                      setReasons([]);
+                      setAdditionalComment('');
+                    }}
+                    className={rating === item.value ? 'selected' : ''}
+                  >
+                    {item.emoji}
+                  </button>
+                  <div className="smileyLabel">{item.label}</div>
                 </div>
-              )}
-            </>
-          )}
+              ))}
+            </div>
+
+            {rating && (
+              <>
+                <div className="feedbackGrid">
+                  {['Excellent', 'Good'].includes(rating) && (
+                    <div className="feedbackColumn">
+                      <h4>👍 What you liked most?</h4>
+                      <div className="reasons">
+                        {positiveReasons.map((reason) => {
+                          const isSelected = reasons.includes(reason);
+                          return (
+                            <button
+                              key={reason}
+                              onClick={() => toggleReason(reason)}
+                              className={`reasonButton green ${isSelected ? 'selected' : ''}`}
+                            >
+                              {isSelected ? '✅ ' : ''}
+                              {reason}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {['Poor'].includes(rating) && (
+                    <div className="feedbackColumn">
+                      <h4>🤔 What could have been better?</h4>
+                      <div className="reasons">
+                        {negativeReasons.map((reason) => {
+                          const isSelected = reasons.includes(reason);
+                          return (
+                            <button
+                              key={reason}
+                              onClick={() => toggleReason(reason)}
+                              className={`reasonButton amber ${isSelected ? 'selected' : ''}`}
+                            >
+                              {isSelected ? '✅ ' : ''}
+                              {reason}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Comment box */}
+                  {['Excellent', 'Good', 'Poor'].includes(rating) && (
+                    <div className="comment-box">
+                      <label htmlFor="additionalComment">
+                        <strong>💡 Anything else you'd like to share?</strong>
+                      </label>
+                      <br />
+                      <textarea
+                        id="additionalComment"
+                        value={additionalComment}
+                        onChange={(e) => setAdditionalComment(e.target.value)}
+                        placeholder="Type your comment here..."
+                        rows={3}
+                        style={{
+                          width: '90%',
+                          padding: '0.5rem',
+                          borderRadius: '8px',
+                          border: '1px solid #ccc',
+                          marginTop: '0.5rem',
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Washroom selector — only when enabled via config */}
+                {showWashroomSelect && (
+                  <fieldset id="washroomFieldset" className="washroomFieldset">
+                    <legend className="washroomLegend">Which washroom?</legend>
+                    <div className="washroomCards">
+                      <label className={`washroomCard ${washroom === 'men' ? 'selected' : ''}`}>
+                        <input
+                          type="radio"
+                          name="washroom"
+                          value="men"
+                          checked={washroom === 'men'}
+                          onChange={() => setWashroom('men')}
+                          className="hiddenInput"
+                        />
+                        <div className="washroomEmoji">🚹</div>
+                        <div className="washroomLabel">Men’s</div>
+                      </label>
+
+                      <label className={`washroomCard ${washroom === 'women' ? 'selected' : ''}`}>
+                        <input
+                          type="radio"
+                          name="washroom"
+                          value="women"
+                          checked={washroom === 'women'}
+                          onChange={() => setWashroom('women')}
+                          className="hiddenInput"
+                        />
+                        <div className="washroomEmoji">🚺</div>
+                        <div className="washroomLabel">Women’s</div>
+                      </label>
+                    </div>
+                  </fieldset>
+                )}
+
+                <div className="button-row">
+                  <button
+                    className="submitBtn"
+                    onClick={handleSubmit}
+                    disabled={!configReady || isSubmitting}
+                  >
+                    Submit
+                  </button>
+                  <button className="resetBtn" onClick={handleReset} disabled={isSubmitting}>
+                    🔄 Reset
+                  </button>
+                </div>
+
+                {isSubmitting && (
+                  <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+                    <div className="spinner"></div>
+                    <p style={{ marginTop: '0.5rem', color: '#007bff' }}>Submitting...</p>
+                  </div>
+                )}
+              </>
+            )}
+          </main>
         </>
       ) : (
-        <div className="thankYouBlock">
-          <h3>🎉 Thank you for your valuable feedback!</h3>
-          <p style={{ marginTop: '0.5rem' }}>
-            Your input helps us make every washroom visit better for everyone.
-          </p>
-        </div>
+        <SubmissionNotice
+          variant={lastRating === 'Poor' ? 'neutral' : 'positive'}
+          washroomLabel={effectiveWashroomLabel}
+          onClose={() => setSubmitted(false)}
+        />
       )}
     </div>
   );
