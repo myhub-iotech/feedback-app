@@ -190,7 +190,7 @@ const HEADER_TITLE = (
     <span className="sparkle" aria-hidden>
       ✨
     </span>
-    <span className="title-text">Washroom Experience Manager</span>
+    <span className="title-text">Washroom Experience Score</span>
   </>
 );
 
@@ -485,7 +485,11 @@ function App() {
                   ? effectiveWashroomLabel
                   : null;
 
-              return <h2 className="prompt">How was this washroom today?</h2>;
+              return (
+                <h2 className="prompt prompt--color">
+                  <span className="q-text">How was your washroom visit today?</span>
+                </h2>
+              );
             })()}
 
             {/* Emoji row */}

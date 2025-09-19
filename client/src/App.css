@@ -564,6 +564,10 @@ body {
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent; /* Safari */
+  padding-inline: clamp(8px, 3vw, 20px);
+  max-inline-size: clamp(22ch, 60vw, 32ch); /* keeps it from stretching too wide */
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 /* Force the emoji to render normally (not clipped) */
@@ -607,10 +611,18 @@ body {
     display: none;
   }
 }
+
 @media (max-width: 520px) {
   .hero-powered {
     display: none;
   } /* keep only the myHuB mark on tiny phones */
+}
+
+/* (Optional) make logos a touch smaller on narrow phones */
+@media (max-width: 420px) {
+  .hero-logo {
+    height: 20px;
+  }
 }
 
 /* Submission notice layout */
@@ -817,5 +829,59 @@ body {
   100% {
     transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(0.75);
     opacity: 0;
+  }
+}
+
+/* Base prompt (you likely already have this) */
+.prompt {
+  margin: 8px auto 10px;
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(18px, 2.6vw, 22px);
+  letter-spacing: 0.2px;
+  color: #0f172a;
+  max-inline-size: 34ch;
+  text-wrap: balance;
+}
+
+/* Muted gradient text + subtle underline (not overly “happy”) */
+.prompt--color .q-text {
+  background: linear-gradient(90deg, #334155, #3b82f6 55%, #22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* shows the gradient */
+  -webkit-text-fill-color: transparent; /* Safari */
+  text-shadow: 0 0.5px 0 rgba(0, 0, 0, 0.06); /* light crispness */
+  display: inline-block;
+}
+
+/* Underline bar (soft, professional) */
+.prompt--color .q-text::after {
+  content: '';
+  display: block;
+  height: 3px;
+  width: clamp(120px, 40%, 220px);
+  margin: 6px auto 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.35), rgba(34, 197, 94, 0.35));
+}
+
+/* High-contrast/older browsers: fall back to solid text color */
+@media (prefers-contrast: more) {
+  .prompt--color .q-text {
+    background: none;
+    -webkit-background-clip: initial;
+    color: #0f172a;
+    -webkit-text-fill-color: initial;
+  }
+  .prompt--color .q-text::after {
+    background: #94a3b8; /* slate-400 */
+  }
+}
+
+/* Tiny screens: slightly shorter underline so it never crowds */
+@media (max-width: 360px) {
+  .prompt--color .q-text::after {
+    width: 48%;
   }
 }
