@@ -323,75 +323,9 @@ body,
   gap: 12px;
 }
 
-.missing-refid {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  color: #fff;
-  background-color: #d9534f; /* red background */
-  text-align: center;
-}
-
 /* Padded content area so cards never hug the screen edge */
 .page {
-  padding-left: 12px;
-  padding-right: 16px;
-}
-
-/* Full-page red background for errors */
-.error-page {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: #7a0d0d; /* rich red to match your screenshot */
-  padding: 24px;
-}
-
-/* Centered “hero” text on red background */
-.error-hero {
-  max-width: 760px;
-  width: 100%;
-  text-align: left; /* or center if you prefer */
-  color: #fff;
-  line-height: 1.6;
-}
-
-.error-hero h1 {
-  margin: 0 0 12px;
-  font-weight: 800;
-  font-size: 28px;
-  letter-spacing: 0.2px;
-}
-
-.error-hero p {
-  margin: 10px 0;
-  font-size: 16px;
-  color: #ffe9e9; /* soft white for body text */
-}
-
-.error-hero ul {
-  margin: 12px 0 8px;
-  padding-left: 0;
-  list-style: none;
-}
-
-.error-hero li {
-  margin: 8px 0;
-  font-size: 16px;
-}
-
-.error-hero a {
-  color: #fff;
-  text-decoration: underline;
-}
-
-.error-hero .muted {
-  color: #ffdede;
-  opacity: 0.95;
-  margin-top: 12px;
-  font-size: 15px;
+  padding: 0 12px 16px;
 }
 
 /* Thin indeterminate progress bar at top */
@@ -518,37 +452,35 @@ body,
   color: #6b7280;
 }
 
-/* Safety net */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
 html,
 body {
   overflow-x: hidden;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 /* One common header used on success, loading, and error */
 /* Header grid */
 .hero {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto 1fr; /* equal gutters keep the title dead-center */
   align-items: center;
-  gap: 12px;
+  gap: clamp(12px, 4vw, 28px); /* was a fixed 12px → now scales on mobile */
   padding: 8px 12px 12px;
   background: #fff;
   border-bottom: 1px solid #eee;
   width: 100%;
+}
+
+/* let every child shrink, so nothing pushes the layout */
+.hero > * {
+  min-width: 0;
+}
+
+/* NEW */
+.hero > img.hero-logo:first-child {
+  justify-self: start;
+}
+.hero-right {
+  justify-self: end;
 }
 
 /* Pin edges */
@@ -571,11 +503,6 @@ body {
 .hero-right,
 .hero-title {
   min-width: 0;
-}
-
-html,
-body {
-  overflow-x: hidden;
 }
 
 /* Logos */
@@ -621,7 +548,14 @@ body {
   font-size: clamp(22px, 3.2vw, 36px);
   font-weight: 900;
   letter-spacing: 0.2px;
-  color: #0f172a; /* solid fallback so emoji always shows */
+  color: #0f172a;
+
+  /* NEW: protective space + clean wrapping */
+  padding-inline: clamp(8px, 3vw, 24px); /* keeps distance from logos */
+  max-inline-size: clamp(22ch, 60vw, 34ch); /* prevents overlong lines */
+  margin-inline: auto; /* keeps centered when wrapped */
+  text-wrap: balance; /* nicer multi-line balance (modern browsers) */
+  overflow-wrap: anywhere; /* fallback so it wraps instead of crowding */
 }
 
 .hero-title .title-text {
@@ -801,63 +735,6 @@ body {
 } /* emerald-800 */
 .submit-close:active {
   transform: translateY(1px);
-}
-
-/* Subtle confetti (only rendered for positive) */
-.confetti {
-  position: relative;
-  height: 0;
-  margin-bottom: 2px;
-}
-.confetti span {
-  position: absolute;
-  top: -8px;
-  width: 6px;
-  height: 10px;
-  border-radius: 1px;
-  animation: confFall 800ms ease-out forwards;
-  opacity: 0.95;
-}
-.confetti span:nth-child(1) {
-  left: 10%;
-  background: #ef4444;
-  animation-delay: 0ms;
-}
-.confetti span:nth-child(2) {
-  left: 28%;
-  background: #f59e0b;
-  animation-delay: 60ms;
-}
-.confetti span:nth-child(3) {
-  left: 46%;
-  background: #22c55e;
-  animation-delay: 120ms;
-}
-.confetti span:nth-child(4) {
-  left: 64%;
-  background: #3b82f6;
-  animation-delay: 40ms;
-}
-.confetti span:nth-child(5) {
-  left: 78%;
-  background: #a855f7;
-  animation-delay: 100ms;
-}
-.confetti span:nth-child(6) {
-  left: 90%;
-  background: #e11d48;
-  animation-delay: 20ms;
-}
-
-@keyframes confFall {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(28px) rotate(35deg);
-    opacity: 0;
-  }
 }
 
 /* Star-burst confetti for positive submissions */

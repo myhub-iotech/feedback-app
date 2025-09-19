@@ -190,7 +190,7 @@ const HEADER_TITLE = (
     <span className="sparkle" aria-hidden>
       ✨
     </span>
-    <span className="title-text">Share your washroom feedback</span>
+    <span className="title-text">Washroom Experience Manager</span>
   </>
 );
 
@@ -477,6 +477,16 @@ function App() {
                 </em>
               </div>
             )}
+
+            {/* Question prompt above emojis */}
+            {(() => {
+              const shortLabel =
+                effectiveWashroomLabel && effectiveWashroomLabel.length <= 26
+                  ? effectiveWashroomLabel
+                  : null;
+
+              return <h2 className="prompt">How was this washroom today?</h2>;
+            })()}
 
             {/* Emoji row */}
             <div className="smileys">
