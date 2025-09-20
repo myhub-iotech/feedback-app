@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './App.css';
 import { useRefCheck } from './hooks/useRefCheck';
@@ -20,7 +20,7 @@ const negativeReasons = [
 
 const FRIENDLY = {
   MISSING_REFID: {
-    title: "Sorry, we couldn't load the Feedback App",
+    title: "Sorry, we couldn't load the Application",
     icon: '❌',
     lead: 'The link is missing a required reference.',
     bullets: [
@@ -29,40 +29,40 @@ const FRIENDLY = {
     ],
   },
   INVALID_REFID: {
-    title: "Sorry, we couldn't load the Feedback App",
+    title: "Sorry, we couldn't load the Application",
     icon: '❌',
-    lead: 'Unable to identify the correct washroom from the link. We would love to hear from you though...',
+    lead: 'Unable to identify the correct washroom from the link.',
     bullets: [
       'If using a QR code, try rescanning the QR code at the washroom entrance.',
       'If using a saved link, retry with the latest valid link.',
     ],
   },
   VALIDATOR_UNAVAILABLE: {
-    title: "Sorry, we couldn't load the Feedback App",
+    title: "Sorry, we couldn't load the Application",
     icon: '🔌',
     lead: 'Our validation service is temporarily unavailable.',
     bullets: ['Check your connection and retry.', 'If the problem continues, contact Facilities.'],
   },
   TIMEOUT: {
-    title: "Sorry, we couldn't load the Feedback App",
+    title: "Sorry, we couldn't load the Application",
     icon: '🔌',
     lead: 'Validation took longer than expected.',
     bullets: ['Check your connection and retry.', 'If the problem continues, contact Facilities.'],
   },
   UPSTREAM: {
-    title: "Sorry, we couldn't load the Feedback App",
+    title: "Sorry, we couldn't load the Application",
     icon: '🚧',
     lead: 'Service is temporarily unavailable.',
     bullets: ['Refresh this page and try again.', 'If the problem continues, contact Facilities.'],
   },
   EXCEPTION: {
-    title: "Sorry, we couldn't load the Feedback App",
+    title: "Sorry, we couldn't load the Application",
     icon: '❌',
     lead: 'An unexpected error occurred.',
     bullets: ['Refresh this page and try again.', 'If the problem continues, contact Facilities.'],
   },
   DEFAULT: {
-    title: "Sorry, we couldn't load the Feedback App",
+    title: "Sorry, we couldn't load the Application",
     icon: '❌',
     lead: 'Please try again.',
     bullets: ['Refresh this page and try again.', 'If the problem continues, contact Facilities.'],
@@ -133,22 +133,22 @@ function FriendlyError({ code, supportPhone, variant = 'card' }) {
     return (
       <div className="error-wrap">
         <div className="error-card error-card--stripe" role="alert" aria-live="polite">
-          <h1>🥲 {c.title}</h1>
-          <p className="lead">
+          <h1 className="error-title">🥲 {c.title}</h1>
+          <p className="error-lead lead">
             <span className="icon" aria-hidden>
               {c.icon || '❌'}
             </span>
             <span>{c.lead}</span>
           </p>
           {c.bullets?.length > 0 && (
-            <ul>
+            <ul className="error-bullets">
               {c.bullets.map((b, i) => (
                 <li key={i}>👉 {b}</li>
               ))}
             </ul>
           )}
           {hotline && (
-            <p className="muted">
+            <p className="error-muted muted">
               📞 Need further help? Call Facilities at{' '}
               <a href={`tel:${String(hotline).replace(/\s+/g, '')}`}>{hotline}</a>
             </p>
@@ -187,10 +187,7 @@ function getRefIdFromUrl() {
 // catchy, compact title with a tiny badge
 const HEADER_TITLE = (
   <>
-    <span className="sparkle" aria-hidden>
-      ✨
-    </span>
-    <span className="title-text">Washroom Experience Score</span>
+    <span className="title-text">Washroom&nbsp;Feedback</span>
   </>
 );
 
@@ -237,6 +234,8 @@ function App() {
   const API_BASE = (config?.api_base || process.env.REACT_APP_API_BASE || '').replace(/\/+$/, '');
   const [washroom, setWashroom] = useState('');
   const [lastRating, setLastRating] = useState(null);
+  const detailsRef = useRef(null); // top of reasons/comment section
+  const emojiRowRef = useRef(null); // where the emoji row sits
 
   // Whether config.json has been fetched (non-empty object), regardless of field values
   const configLoaded = Object.keys(config || {}).length > 0;
@@ -430,6 +429,51 @@ function App() {
     }
   }
 
+  // Scroll to the details block (reasons/comment/buttons) with header offset.
+  // Skips if user prefers reduced motion or we're already near the target.
+  const smoothScrollToDetails = () => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+
+    const el = detailsRef.current;
+    if (!el) return;
+
+    const headerH = (document.querySelector('.hero')?.offsetHeight || 0) + 8; // +8px cushion
+    const targetY = el.getBoundingClientRect().top + window.scrollY - headerH;
+
+    // If we're already close, don't animate again (prevents tiny “jerks”)
+    if (Math.abs(window.scrollY - targetY) < 24) return;
+
+    window.scrollTo({ top: targetY, behavior: 'smooth' });
+
+    // Optional: give keyboard users a focus point without re-scrolling
+    setTimeout(() => {
+      const focusable = el.querySelector('button, textarea, [tabindex]:not([tabindex="-1"])');
+      focusable?.focus?.({ preventScroll: true });
+    }, 250);
+  };
+
+  const onEmojiSelect = (value) => {
+    setRating(value);
+    setReasons([]);
+    setAdditionalComment('');
+
+    // Smoothly scroll to the details on all devices
+    requestAnimationFrame(() => {
+      setTimeout(smoothScrollToDetails, 0);
+    });
+  };
+
+  const clearRating = () => {
+    setRating('');
+    setReasons([]);
+    setAdditionalComment('');
+    // smooth scroll back to the emoji row
+    setTimeout(() => {
+      emojiRowRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 0);
+  };
+
   return (
     <div className="App">
       {/* 🆕 Tiny badge so you can visually confirm which refId is active */}
@@ -459,8 +503,7 @@ function App() {
                 </span>
                 <br />
                 <em style={{ opacity: 0.9 }}>
-                  If this isn’t the correct washroom, please scan the right QR code or check the
-                  link.
+                  If this isn’t the correct washroom, please recheck the QR code or link.
                   {supportPhone && (
                     <>
                       {' '}
@@ -480,11 +523,6 @@ function App() {
 
             {/* Question prompt above emojis */}
             {(() => {
-              const shortLabel =
-                effectiveWashroomLabel && effectiveWashroomLabel.length <= 26
-                  ? effectiveWashroomLabel
-                  : null;
-
               return (
                 <h2 className="prompt prompt--color">
                   <span className="q-text">How was your washroom visit today?</span>
@@ -493,30 +531,37 @@ function App() {
             })()}
 
             {/* Emoji row */}
-            <div className="smileys">
+            <div ref={emojiRowRef} className="smileys">
               {[
                 { emoji: '😄', label: 'Excellent', value: 'Excellent' },
                 { emoji: '🙂', label: 'Satisfactory', value: 'Good' },
                 { emoji: '🙁', label: 'Unsatisfactory', value: 'Poor' },
-              ].map((item) => (
-                <div key={item.value} className="smileyOption">
-                  <button
-                    onClick={() => {
-                      setRating(item.value);
-                      setReasons([]);
-                      setAdditionalComment('');
-                    }}
-                    className={rating === item.value ? 'selected' : ''}
-                  >
-                    {item.emoji}
-                  </button>
-                  <div className="smileyLabel">{item.label}</div>
-                </div>
-              ))}
+              ]
+                .filter((item) => !rating || item.value === rating)
+                .map((item) => (
+                  <div key={item.value} className="smileyOption">
+                    <button
+                      onClick={() => onEmojiSelect(item.value)}
+                      className={rating === item.value ? 'selected' : ''}
+                    >
+                      {item.emoji}
+                    </button>
+                    <div className="smileyLabel">{item.label}</div>
+                  </div>
+                ))}
             </div>
 
             {rating && (
+              <div className="change-rating">
+                <button type="button" className="linkBtn" onClick={clearRating}>
+                  ← Change rating
+                </button>
+              </div>
+            )}
+
+            {rating && (
               <>
+                <div ref={detailsRef} /> {/* <-- anchor to scroll to */}
                 <div className="feedbackGrid">
                   {['Excellent', 'Good'].includes(rating) && (
                     <div className="feedbackColumn">
@@ -584,7 +629,6 @@ function App() {
                     </div>
                   )}
                 </div>
-
                 {/* Washroom selector — only when enabled via config */}
                 {showWashroomSelect && (
                   <fieldset id="washroomFieldset" className="washroomFieldset">
@@ -618,7 +662,6 @@ function App() {
                     </div>
                   </fieldset>
                 )}
-
                 <div className="button-row">
                   <button
                     className="submitBtn"
@@ -631,7 +674,6 @@ function App() {
                     🔄 Reset
                   </button>
                 </div>
-
                 {isSubmitting && (
                   <div style={{ marginTop: '1rem', textAlign: 'center' }}>
                     <div className="spinner"></div>
