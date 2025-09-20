@@ -312,16 +312,6 @@ body,
   outline-offset: 2px;
 }
 
-/* Ultra-narrow phones: force single column and tighten padding */
-@media (max-width: 360px) {
-  .washroomCards {
-    grid-template-columns: 1fr;
-  }
-  .washroomCard {
-    padding: 10px;
-  }
-}
-
 /* Ensure action buttons don’t overlap on tiny screens */
 .button-row {
   flex-wrap: wrap;
@@ -475,59 +465,46 @@ body,
   text-decoration: underline;
 }
 
-/* Tighten spacing slightly on very small phones */
-@media (max-width: 360px) {
-  .error-card h1 {
-    font-size: 20px;
-  }
-  .error-card li {
-    margin: 6px 0;
-  }
-}
-
 /* One common header used on success, loading, and error */
 /* Header grid */
 .hero {
   display: grid;
-  grid-template-columns: 1fr auto 1fr; /* equal gutters keep the title dead-center */
+  grid-template-columns: minmax(160px, 1fr) auto minmax(120px, 1fr); /* 3 columns that can shrink */
   align-items: center;
-  gap: clamp(12px, 4vw, 28px); /* was a fixed 12px → now scales on mobile */
+  gap: clamp(12px, 3vw, 28px);
+
+  /* keep your visuals */
   padding: 8px 12px 12px;
   background: #fff;
   border-bottom: 1px solid #eee;
-  width: 100%;
+  box-sizing: border-box;
+  inline-size: 100%;
 }
-
-/* let every child shrink, so nothing pushes the layout */
 .hero > * {
   min-width: 0;
-}
+} /* lets the side columns actually shrink */
 
-/* NEW */
-.hero > img.hero-logo:first-child {
-  justify-self: start;
-}
-.hero-right {
-  justify-self: end;
-}
-
-/* Pin edges */
+/* left logo (it's the first child <img/>) */
 .hero > img.hero-logo:first-child {
   justify-self: start;
 }
 
 /* Right block stays inline, but can shrink now */
+/* Desktop/tablet default: stay in the right column, same row as title */
+/* Desktop/tablet default: stay in the right column, same row as title */
 .hero-right {
+  grid-column: 3; /* <- anchor to right column */
+  justify-self: end; /* <- hug the right edge */
+
   display: inline-flex;
   align-items: center;
-  gap: 10px; /* a touch more room */
+  gap: 10px;
   white-space: nowrap;
-  text-align: right;
-  justify-self: end;
-  min-width: 0;
+  min-width: 0; /* allow it to shrink */
+  /* text-align: right;  // optional; not needed for layout */
 }
 
-/* IMPORTANT: allow grid children to shrink */
+/* Keep this helper if you like */
 .hero-right,
 .hero-title {
   min-width: 0;
@@ -536,11 +513,23 @@ body,
 /* Logos */
 .hero-logo {
   display: block;
-  height: clamp(24px, 3.2vw, 40px);
+  height: clamp(20px, 2.4vw, 32px);
   width: auto;
   object-fit: contain;
   line-height: 1;
+  max-width: 26vw; /* stop a logo from hogging the row */
 }
+
+/* Use the real ratios so width can be computed immediately */
+.hero-logo--sigma {
+  aspect-ratio: 2560 / 739;
+  max-width: 30vw;
+}
+.hero-logo--myhub {
+  aspect-ratio: 1 / 1;
+  max-width: 18vw;
+}
+
 .hero-logo--slim {
   height: clamp(22px, 2.8vw, 34px);
 }
@@ -572,21 +561,31 @@ body,
 
 /* Title container: just center it; don't constrain width here */
 .hero-title {
+  grid-column: 2;
+  justify-self: center;
+
   margin: 0;
   text-align: center;
   font-size: clamp(22px, 3.2vw, 36px);
   font-weight: 650;
   letter-spacing: 0.1px;
+  line-height: 1.12; /* keeps 2-line stacks compact */
   color: #0f172a;
 }
 
 /* Title text: balanced wrap, safe side padding, gradient */
 .hero-title .title-text {
   display: inline-block;
-  padding-inline: clamp(8px, 3vw, 20px); /* breathing room near logos */
-  max-inline-size: clamp(22ch, 60vw, 32ch); /* wraps nicely when needed */
+  padding-inline: clamp(8px, 3vw, 20px);
+
+  /* REPLACED: clamp(22ch, 60vw, 32ch) never actually used the middle value.
+     This version responds to viewport width correctly and caps at ~32ch. */
+  max-inline-size: min(64vw, 30ch);
+
+  white-space: normal; /* ensure wrapping is allowed */
   text-wrap: balance; /* prettier 2-line break */
   overflow-wrap: anywhere; /* fallback */
+  margin-inline: auto; /* keep centered when wrapped */
 
   background: linear-gradient(90deg, #2563eb, #16a34a 60%, #f59e0b 100%);
   -webkit-background-clip: text;
@@ -604,8 +603,8 @@ body,
   background: none !important;
   -webkit-background-clip: initial;
   -webkit-text-fill-color: currentColor;
-  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', system-ui, sans-serif;
   filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.25));
+  vertical-align: -0.12em; /* tiny baseline nudge */
 }
 
 /* compact “10 sec” pill */
@@ -619,35 +618,6 @@ body,
   background: rgba(34, 197, 94, 0.12); /* green tint */
   color: #065f46; /* deep green text */
   vertical-align: middle;
-}
-
-/* Mobile tweaks */
-@media (max-width: 560px) {
-  .hero {
-    gap: 8px;
-  }
-  .hero-logo {
-    height: 26px;
-  }
-  .hero-logo--slim {
-    height: 24px;
-  }
-  .hero-badge {
-    display: none;
-  }
-}
-
-@media (max-width: 600px) {
-  .hero-powered {
-    display: none;
-  } /* keep only the myHuB mark on tiny phones */
-}
-
-/* (Optional) make logos a touch smaller on narrow phones */
-@media (max-width: 420px) {
-  .hero-logo {
-    height: 20px;
-  }
 }
 
 /* Submission notice layout */
@@ -905,26 +875,6 @@ body,
   padding: 0;
 }
 
-/* High-contrast/older browsers: fall back to solid text color */
-@media (prefers-contrast: more) {
-  .prompt--color .q-text {
-    background: none;
-    -webkit-background-clip: initial;
-    color: #0f172a;
-    -webkit-text-fill-color: initial;
-  }
-  .prompt--color .q-text::after {
-    background: #94a3b8; /* slate-400 */
-  }
-}
-
-/* Tiny screens: slightly shorter underline so it never crowds */
-@media (max-width: 360px) {
-  .prompt--color .q-text::after {
-    width: 48%;
-  }
-}
-
 /* === Error card: scaled, softer, unambiguous === */
 
 /* Headline: smaller on phones, capped on desktop */
@@ -977,4 +927,157 @@ body,
   .error-card .error-bullets li {
     margin: 6px 0;
   }
+}
+
+/* Ultra-small phones: slightly reduce sparkle so it never "floats" on its own */
+@media (max-width: 380px) {
+  .hero-title .sparkle {
+    font-size: 0.95em;
+    margin-right: 0.25rem;
+  }
+}
+
+/* Mobile tweaks */
+@media (max-width: 640px) {
+  .hero {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    row-gap: 6px;
+  }
+  .hero-title {
+    grid-column: 1;
+  }
+
+  .hero-right {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: end;
+  } /* <- row 2 only here */
+
+  .hero-logo {
+    height: 26px;
+  }
+  .hero-logo--slim {
+    height: 24px;
+  }
+  .hero-title .title-text {
+    max-inline-size: min(86vw, 28ch);
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-powered {
+    display: none;
+  } /* keep only the myHuB mark on tiny phones */
+}
+
+/* (Optional) make logos a touch smaller on narrow phones */
+@media (max-width: 420px) {
+  .hero-logo {
+    height: 20px;
+  }
+}
+
+/* Ultra-narrow phones: force single column and tighten padding */
+@media (max-width: 360px) {
+  .washroomCards {
+    grid-template-columns: 1fr;
+  }
+  .washroomCard {
+    padding: 10px;
+  }
+}
+
+/* Tighten spacing slightly on very small phones */
+@media (max-width: 360px) {
+  .error-card h1 {
+    font-size: 20px;
+  }
+  .error-card li {
+    margin: 6px 0;
+  }
+}
+
+/* High-contrast/older browsers: fall back to solid text color */
+@media (prefers-contrast: more) {
+  .prompt--color .q-text {
+    background: none;
+    -webkit-background-clip: initial;
+    color: #0f172a;
+    -webkit-text-fill-color: initial;
+  }
+  .prompt--color .q-text::after {
+    background: #94a3b8; /* slate-400 */
+  }
+}
+
+/* Tiny screens: slightly shorter underline so it never crowds */
+@media (max-width: 360px) {
+  .prompt--color .q-text::after {
+    width: 48%;
+  }
+}
+
+/* --- Simple two-row header: logos first, title second --- */
+.hero.hero--two-rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); /* L | title | R widths */
+  grid-template-rows: auto auto; /* row1 logos, row2 title */
+  align-items: center;
+  gap: clamp(10px, 2.5vw, 16px);
+  box-sizing: border-box;
+}
+
+/* allow grid children to actually shrink */
+.hero.hero--two-rows > * {
+  min-width: 0;
+}
+
+/* row 1 placements */
+.hero.hero--two-rows > img.hero-logo:first-child {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+.hero.hero--two-rows .hero-right {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* row 2: title centered, spanning all columns */
+.hero.hero--two-rows .hero-title {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: center;
+  text-align: center;
+}
+
+/* keep logos responsive but modest */
+.hero.hero--two-rows .hero-logo {
+  height: clamp(20px, 2.6vw, 36px);
+  width: auto;
+  object-fit: contain;
+  line-height: 1;
+}
+.hero.hero--two-rows .hero-logo--sigma {
+  aspect-ratio: 1435 / 300;
+  max-width: 34vw;
+}
+.hero.hero--two-rows .hero-logo--myhub {
+  aspect-ratio: 1 / 1;
+  max-width: 22vw;
+}
+
+/* title text stays balanced on wrap */
+.hero.hero--two-rows .title-text {
+  max-inline-size: min(80vw, 32ch);
+  text-wrap: balance;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  margin-inline: auto;
 }

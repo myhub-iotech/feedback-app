@@ -187,25 +187,26 @@ function getRefIdFromUrl() {
 // catchy, compact title with a tiny badge
 const HEADER_TITLE = (
   <>
-    <span className="title-text">Washroom&nbsp;Feedback</span>
+    <span className="sparkle" aria-hidden>
+      ✨
+    </span>
+    <span className="title-text">Washroom Feedback</span>
   </>
 );
 
 function AppHeader() {
   return (
-    <div className="hero">
+    <div className="hero hero--two-rows">
       {/* LEFT: client (Sigma AVIT) */}
       <img
         src="/logos/sigma.png"
         alt="Sigma AVIT"
-        className="hero-logo hero-logo--slim"
-        width="1435"
-        height="300"
+        className="hero-logo hero-logo--sigma"
+        width={2560}
+        height={739}
         decoding="async"
+        fetchPriority="high"
       />
-
-      {/* CENTER: common heading */}
-      <h1 className="hero-title">{HEADER_TITLE}</h1>
 
       {/* RIGHT: powered by myHuB */}
       <div className="hero-right" aria-label="Powered by myHuB">
@@ -213,12 +214,19 @@ function AppHeader() {
         <img
           src="/logos/myhub.png"
           alt="myHuB"
-          className="hero-logo"
-          width="768"
-          height="768"
+          className="hero-logo hero-logo--myhub"
+          width={1024}
+          height={1024}
           decoding="async"
         />
       </div>
+      {/* Title (row 2, centered) */}
+      <h1 className="hero-title">
+        <span className="sparkle" aria-hidden>
+          ✨
+        </span>
+        <span className="title-text">Washroom Feedback</span>
+      </h1>
     </div>
   );
 }
