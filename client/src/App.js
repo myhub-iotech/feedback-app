@@ -106,13 +106,13 @@ function SubmissionNotice({ variant = 'positive', washroomLabel, onClose }) {
         </div>
 
         <h3 className="submit-title">
-          {isPositive ? 'Thank You! Your feedback was sent.' : 'Thank You! Your feedback was sent.'}
+          {isPositive ? 'Big Thanks for your feedback.' : 'We sincerely appreciate your feedback.'}
         </h3>
 
         <p className="submit-text">
           {isPositive
-            ? 'We value your feedback. Your feedback helps us keep standards high.'
-            : 'We value your feedback. We will work to improve your next visit.'}
+            ? 'This motivates us to maintain our high Standards.'
+            : 'Will ensure to improve your next visit.'}
         </p>
 
         <div className="submit-actions">
@@ -221,12 +221,7 @@ function AppHeader() {
         />
       </div>
       {/* Title (row 2, centered) */}
-      <h1 className="hero-title">
-        <span className="sparkle" aria-hidden>
-          ✨
-        </span>
-        <span className="title-text">Washroom Feedback</span>
-      </h1>
+      <h1 className="hero-title">{HEADER_TITLE}</h1>
     </div>
   );
 }
@@ -405,11 +400,11 @@ function App() {
   };
 
   const handleReset = () => {
-    setRating('');
+    // setRating('');
     setReasons([]);
     setAdditionalComment('');
     setSubmitted(false);
-    setWashroom('');
+    // setWashroom('');
     // 🆕 Do not clear refId on reset; it should stick to the kiosk/session
   };
 

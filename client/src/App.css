@@ -511,13 +511,16 @@ body,
 }
 
 /* Logos */
+/* Bigger by default + slightly crisper rendering */
 .hero-logo {
   display: block;
-  height: clamp(20px, 2.4vw, 32px);
+  height: clamp(28px, 4.6vw, 64px); /* was clamp(20px, 2.4vw, 32px) */
   width: auto;
   object-fit: contain;
   line-height: 1;
-  max-width: 26vw; /* stop a logo from hogging the row */
+  max-width: 36vw; /* was 26vw */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Use the real ratios so width can be computed immediately */
@@ -528,6 +531,14 @@ body,
 .hero-logo--myhub {
   aspect-ratio: 1 / 1;
   max-width: 18vw;
+}
+
+.hero .hero-logo--myhub {
+  /* ~1.25× the base logo height, with a higher ceiling */
+  height: clamp(40px, 6.4vw, 96px);
+  max-width: 40vw; /* allow it to grow wider if needed */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .hero-logo--slim {
@@ -879,7 +890,7 @@ body,
 
 /* Headline: smaller on phones, capped on desktop */
 .error-card .error-title {
-  font-size: clamp(18px, 4px, 40px);
+  font-size: clamp(18px, 4vw, 32px);
   line-height: 1.5;
   margin: 4px 0 10px;
   font-weight: 500;
@@ -937,6 +948,18 @@ body,
   }
 }
 
+/* Emoji row: tighten on small screens so it never overflows */
+@media (max-width: 480px) {
+  .smileys {
+    gap: 1.5rem;
+  }
+  .smileyOption button {
+    width: 72px;
+    height: 72px;
+    font-size: 3rem;
+  }
+}
+
 /* Mobile tweaks */
 @media (max-width: 640px) {
   .hero {
@@ -969,13 +992,22 @@ body,
   .hero-powered {
     display: none;
   } /* keep only the myHuB mark on tiny phones */
+  .hero-logo {
+    height: 28px;
+  }
+  .hero .hero-logo--myhub {
+    height: 34px;
+  }
 }
 
 /* (Optional) make logos a touch smaller on narrow phones */
 @media (max-width: 420px) {
   .hero-logo {
-    height: 20px;
-  }
+    height: 26px;
+  } /* was 20px */
+  {
+  .hero .hero-logo--myhub { height: 32px; }
+}
 }
 
 /* Ultra-narrow phones: force single column and tighten padding */
@@ -1059,18 +1091,19 @@ body,
 
 /* keep logos responsive but modest */
 .hero.hero--two-rows .hero-logo {
-  height: clamp(20px, 2.6vw, 36px);
+  height: clamp(36px, 7vw, 92px); /* new: larger floor/ceiling */
   width: auto;
   object-fit: contain;
   line-height: 1;
 }
 .hero.hero--two-rows .hero-logo--sigma {
   aspect-ratio: 1435 / 300;
-  max-width: 34vw;
+  max-width: 44vw;
 }
 .hero.hero--two-rows .hero-logo--myhub {
   aspect-ratio: 1 / 1;
-  max-width: 22vw;
+  height: clamp(58px, 9vw, 128px);
+  max-width: 46vw;
 }
 
 /* title text stays balanced on wrap */
