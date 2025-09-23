@@ -76,12 +76,34 @@ function SubmissionNotice({ variant = 'positive', washroomLabel, onClose }) {
     return () => clearTimeout(t);
   }, [onClose]);
 
+  const isVeryPositive = variant === 'veryPositive';
   const isPositive = variant === 'positive';
+  const isNegative = variant === 'negative';
+
+  // reuse existing styles: negative -> "neutral" (amber), others -> "positive" (green)
+  const cardClass = isNegative ? 'neutral' : isVeryPositive ? 'veryPositive' : 'positive';
+  const iconClass = isNegative ? 'neutral' : 'ok';
+  const showConfetti = isVeryPositive; // confetti only for Excellent
+
+  const COPY = {
+    veryPositive: {
+      title: 'Big Kudos for your feedback.',
+      text: 'This motivates us to maintain our high Standards.',
+    },
+    positive: {
+      title: 'Thanks much for your feedback.',
+      text: 'Will strive to make it Awesome.',
+    },
+    negative: {
+      title: 'We sincerely appreciate your feedback.',
+      text: 'Will ensure to improve your next visit.',
+    },
+  };
+  const c = COPY[variant] || COPY.positive;
 
   return (
     <div className="submit-wrap">
-      {/* subtle top confetti only for positive */}
-      {isPositive && (
+      {showConfetti && (
         <div className="burst" aria-hidden>
           <span />
           <span />
@@ -96,25 +118,12 @@ function SubmissionNotice({ variant = 'positive', washroomLabel, onClose }) {
         </div>
       )}
 
-      <div
-        className={`submit-card ${isPositive ? 'positive' : 'neutral'}`}
-        role="status"
-        aria-live="polite"
-      >
-        <div className={`submit-icon ${isPositive ? 'ok' : 'neutral'}`} aria-hidden>
-          {/* tiny animated check – same for both, just different tint */}✓
+      <div className={`submit-card ${cardClass}`} role="status" aria-live="polite">
+        <div className={`submit-icon ${iconClass}`} aria-hidden>
+          ✓
         </div>
-
-        <h3 className="submit-title">
-          {isPositive ? 'Big Thanks for your feedback.' : 'We sincerely appreciate your feedback.'}
-        </h3>
-
-        <p className="submit-text">
-          {isPositive
-            ? 'This motivates us to maintain our high Standards.'
-            : 'Will ensure to improve your next visit.'}
-        </p>
-
+        <h3 className="submit-title">{c.title}</h3>
+        <p className="submit-text">{c.text}</p>
         <div className="submit-actions">
           <button className="submit-close" onClick={() => onClose?.()}>
             Close
@@ -477,6 +486,9 @@ function App() {
     }, 0);
   };
 
+  const getVariantForRating = (r) =>
+    r === 'Excellent' ? 'veryPositive' : r === 'Good' ? 'positive' : 'negative';
+
   return (
     <div className="App">
       {/* 🆕 Tiny badge so you can visually confirm which refId is active */}
@@ -689,7 +701,7 @@ function App() {
         </>
       ) : (
         <SubmissionNotice
-          variant={lastRating === 'Poor' ? 'neutral' : 'positive'}
+          variant={getVariantForRating(lastRating)}
           washroomLabel={effectiveWashroomLabel}
           onClose={() => setSubmitted(false)}
         />

@@ -668,14 +668,28 @@ body,
   color: #7c2d12;
 } /* amber-900 */
 
-/* ✅ Positive (happy): brighter minty green */
-.submit-card.positive {
-  background: #eafff4; /* brighter than green-50 */
-  border-color: #86efac; /* green-300 */
+/* Very Positive (Excellent) — emerald */
+.submit-card.veryPositive {
+  background: #F0FDF4;             /* green-50 */
+  border-color: #22C55E;           /* green-500 */
 }
-.submit-card.positive .submit-icon {
-  background: #22c55e; /* green-500 */
-  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12); /* soft ring */
+.submit-card.veryPositive .submit-title { color: #166534; }   /* green-700 */
+.submit-card.veryPositive .submit-icon.ok {
+  background: #DCFCE7;             /* green-100 */
+  color: #166534;                  /* green-700 */
+  border-color: #86EFAC;           /* green-300 */
+}
+
+/* Positive (Satisfactory) — sky/blue */
+.submit-card.positive {
+  background: #F0F9FF;             /* sky-50 */
+  border-color: #38BDF8;           /* sky-400 */
+}
+.submit-card.positive .submit-title { color: #075985; }       /* sky-700 */
+.submit-card.positive .submit-icon.ok {
+  background: #E0F2FE;             /* sky-100 */
+  color: #075985;                  /* sky-700 */
+  border-color: #7DD3FC;           /* sky-300 */
 }
 
 @keyframes fadeIn {
