@@ -72,7 +72,7 @@ const FRIENDLY = {
 function SubmissionNotice({ variant = 'positive', washroomLabel, onClose }) {
   // Auto dismiss after 4s; can also be closed via button
   useEffect(() => {
-    const t = setTimeout(() => onClose?.(), 4000);
+    const t = setTimeout(() => onClose?.(), 10000);
     return () => clearTimeout(t);
   }, [onClose]);
 
