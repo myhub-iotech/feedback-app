@@ -213,28 +213,31 @@ const HEADER_TITLE = (
 function AppHeader() {
   return (
     <div className="hero hero--two-rows">
-      {/* LEFT: client (Sigma AVIT) */}
-      <img
-        src="/logos/sigma.png"
-        alt="Sigma AVIT"
-        className="hero-logo hero-logo--sigma"
-        width={2560}
-        height={739}
-        decoding="async"
-        fetchPriority="high"
-      />
-
-      {/* RIGHT: powered by myHuB */}
-      <div className="hero-right" aria-label="Powered by myHuB">
-        <span className="hero-powered">Powered by</span>
+      {/* Logo row with flexbox */}
+      <div className="hero-logos">
+        {/* LEFT: client (Sigma AVIT) */}
         <img
-          src="/logos/myhub.png"
-          alt="myHuB"
-          className="hero-logo hero-logo--myhub"
-          width={1024}
-          height={1024}
+          src="/logos/sigma.png"
+          alt="Sigma AVIT"
+          className="hero-logo hero-logo--sigma"
+          width={2560}
+          height={739}
           decoding="async"
+          fetchPriority="high"
         />
+
+        {/* RIGHT: powered by myHuB */}
+        <div className="hero-right" aria-label="Powered by myHuB">
+          <span className="hero-powered">Powered by</span>
+          <img
+            src="/logos/myhub.png"
+            alt="myHuB"
+            className="hero-logo hero-logo--myhub"
+            width={1024}
+            height={1024}
+            decoding="async"
+          />
+        </div>
       </div>
       {/* Title (row 2, centered) */}
       <h1 className="hero-title">{HEADER_TITLE}</h1>
@@ -510,36 +513,30 @@ function App() {
               <div
                 className="infoBanner"
                 style={{
-                  margin: '8px 0 14px',
-                  padding: '10px 12px',
+                  margin: '16px 16px 20px 16px',
+                  padding: '12px 16px',
                   borderRadius: 8,
-                  background: '#f4f8ff',
-                  border: '1px solid #d8e6ff',
-                  fontSize: 14,
-                  lineHeight: 1.4,
+                  background: '#f5f5f5',
+                  border: '1px solid #ddd',
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: '#333',
+                  textAlign: 'center',
+                  lineHeight: 1.3,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
                 }}
               >
-                <strong>Feedback for:</strong>{' '}
-                <span style={{ fontWeight: 'bold', color: '#1a3d8f' }}>
-                  {effectiveWashroomLabel}
-                </span>
-                <br />
-                <em style={{ opacity: 0.9 }}>
-                  If this isn’t the correct washroom, please recheck the QR code or link.
-                  {supportPhone && (
-                    <>
-                      {' '}
-                      Need further help? Call Facilities at{' '}
-                      <a
-                        href={`tel:${supportPhone.replace(/\s+/g, '')}`}
-                        style={{ textDecoration: 'underline', color: '#1a3d8f' }}
-                      >
-                        {supportPhone}
-                      </a>
-                      .
-                    </>
-                  )}
-                </em>
+                {effectiveWashroomLabel?.split(' ').map((word, index) => (
+                  <span key={index}>
+                    {word}
+                    {index === 1 && <br />}
+                    {index !== effectiveWashroomLabel.split(' ').length - 1 && index !== 1 && ' '}
+                  </span>
+                ))}
               </div>
             )}
 

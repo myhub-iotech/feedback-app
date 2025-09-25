@@ -85,7 +85,7 @@ router.get('/validate', async (req, res) => {
     }
 
     const returnedId = item?.id?.id || null;
-    const label = item?.name ?? item?.label ?? item?.title ?? null;
+    const label = item?.label ?? item?.name ?? null;
 
     const sameId =
       typeof returnedId === 'string' &&

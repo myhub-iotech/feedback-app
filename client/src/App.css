@@ -1066,29 +1066,26 @@ body,
 
 /* --- Simple two-row header: logos first, title second --- */
 .hero.hero--two-rows {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); /* L | title | R widths */
-  grid-template-rows: auto auto; /* row1 logos, row2 title */
-  align-items: center;
+  display: flex;
+  flex-direction: column;
   gap: clamp(10px, 2.5vw, 16px);
   box-sizing: border-box;
 }
 
-/* allow grid children to actually shrink */
-.hero.hero--two-rows > * {
-  min-width: 0;
+/* Logo row with flexbox */
+.hero-logos {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 /* row 1 placements */
-.hero.hero--two-rows > img.hero-logo:first-child {
-  grid-column: 1;
-  grid-row: 1;
-  justify-self: start;
+.hero.hero--two-rows .hero-logos > img.hero-logo:first-child {
+  flex: 0 0 auto;
 }
 .hero.hero--two-rows .hero-right {
-  grid-column: 3;
-  grid-row: 1;
-  justify-self: end;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1101,6 +1098,7 @@ body,
   grid-row: 2;
   justify-self: center;
   text-align: center;
+  font-size: clamp(1.2rem, 4vw, 1.6rem);
 }
 
 /* keep logos responsive but modest */
@@ -1111,8 +1109,8 @@ body,
   line-height: 1;
 }
 .hero.hero--two-rows .hero-logo--sigma {
-  aspect-ratio: 1435 / 300;
   max-width: 44vw;
+  margin-left: 0;
 }
 .hero.hero--two-rows .hero-logo--myhub {
   aspect-ratio: 1 / 1;
