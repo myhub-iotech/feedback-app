@@ -9,12 +9,19 @@ const positiveReasons = [
   'Awesome to see Action taken on my Feedback',
 ];
 
+const neutralReasons = [
+  'Met my expectations for Cleanliness',
+  'Room for improvement exists - see comments below',
+  'Found all the Supplies needed',
+];
+
 const negativeReasons = [
   'Paper Towels Unavailable',
   'Liquid Soap Unavailable',
+  'Toilet Paper Roll Unavailable',
   'Trash Bin not Cleaned',
-  'Floor not Clean',
   'Bad Odor',
+  'Floor not Clean',
   'Broken Fixtures',
 ];
 
@@ -581,11 +588,32 @@ function App() {
               <>
                 <div ref={detailsRef} /> {/* <-- anchor to scroll to */}
                 <div className="feedbackGrid">
-                  {['Excellent', 'Good'].includes(rating) && (
+                  {['Excellent'].includes(rating) && (
                     <div className="feedbackColumn">
                       <h4>👍 What you liked most?</h4>
                       <div className="reasons">
                         {positiveReasons.map((reason) => {
+                          const isSelected = reasons.includes(reason);
+                          return (
+                            <button
+                              key={reason}
+                              onClick={() => toggleReason(reason)}
+                              className={`reasonButton green ${isSelected ? 'selected' : ''}`}
+                            >
+                              {isSelected ? '✅ ' : ''}
+                              {reason}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {['Good'].includes(rating) && (
+                    <div className="feedbackColumn">
+                      <h4>👍 What you liked most?</h4>
+                      <div className="reasons">
+                        {neutralReasons.map((reason) => {
                           const isSelected = reasons.includes(reason);
                           return (
                             <button
