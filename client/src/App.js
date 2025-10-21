@@ -297,17 +297,23 @@ function App() {
       });
   }, []);
 
-  // ⛔ Prevent initial flash: don’t render anything until config.json is loaded
+  // Show header immediately, then load content progressively
   if (!configLoaded) {
-    // Option A: totally blank (fastest, no flicker)
-    return null;
-
-    // Option B: minimal branded loader (uncomment if you want a spinner)
-    // return (
-    //   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-    //     <div className="spinner" />
-    //   </div>
-    // );
+    return (
+      <div className="App">
+        <AppHeader />
+        <main className="page">
+          {/* Loading placeholders for content */}
+          <div style={{ height: '60px', background: '#f0f0f0', margin: '16px', borderRadius: '8px', animation: 'skeleton-loading 1.5s infinite' }} />
+          <div style={{ height: '40px', background: '#f0f0f0', margin: '16px auto', borderRadius: '4px', maxWidth: '300px', animation: 'skeleton-loading 1.5s infinite' }} />
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', margin: '20px 0' }}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} style={{ width: '60px', height: '60px', background: '#f0f0f0', borderRadius: '50%', animation: 'skeleton-loading 1.5s infinite' }} />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
   }
 
   const toggleReason = (reason) => {

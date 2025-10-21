@@ -1070,6 +1070,11 @@ body,
   flex-direction: column;
   gap: clamp(10px, 2.5vw, 16px);
   box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  padding: 8px 0;
 }
 
 /* Logo row with flexbox */
@@ -1125,4 +1130,14 @@ body,
   white-space: normal;
   overflow-wrap: anywhere;
   margin-inline: auto;
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
 }

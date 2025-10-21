@@ -86,6 +86,7 @@ router.get('/validate', async (req, res) => {
 
     const returnedId = item?.id?.id || null;
     const label = item?.label ?? item?.name ?? null;
+    const assetProfileName = item?.type ?? null;
 
     const sameId =
       typeof returnedId === 'string' &&
@@ -105,6 +106,7 @@ router.get('/validate', async (req, res) => {
       data: {
         assetId,
         label, // ← "4F Women Washroom"
+        assetProfileName,
         status: (item?.status && String(item.status).toLowerCase()) || 'unknown',
       },
     };

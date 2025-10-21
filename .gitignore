@@ -44,3 +44,4 @@ yarn.lock
 # Optional: Lint or Prettier cache
 .eslintcache
 .prettiercache
+.vercel
