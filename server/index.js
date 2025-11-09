@@ -21,16 +21,26 @@ try {
   });
 }
 
-const client = new MongoClient(process.env.MONGO_URI);
 const MISSING_REF_POLICY = (process.env.MISSING_REF_POLICY || 'ignore').toLowerCase();
 
-let collection;
+// Connection pooling for Vercel serverless
+let cachedClient = null;
 
-client.connect().then(() => {
-  const db = client.db('UserFeedback');
-  collection = db.collection('feedback');
+async function connectToDatabase() {
+  if (cachedClient) {
+    return cachedClient;
+  }
+
+  const client = new MongoClient(process.env.MONGO_URI, {
+    maxPoolSize: 10,
+    minPoolSize: 1,
+  });
+
+  await client.connect();
   console.log('Connected to MongoDB');
-});
+  cachedClient = client;
+  return client;
+}
 
 app.post('/submitFeedback', async (req, res) => {
   try {
@@ -63,11 +73,9 @@ app.post('/submitFeedback', async (req, res) => {
       });
     }
 
-    if (!collection) {
-      return res
-        .status(503)
-        .json({ ok: false, code: 'DB_NOT_READY', message: 'Database not ready' });
-    }
+    const client = await connectToDatabase();
+    const db = client.db('UserFeedback');
+    const collection = db.collection('feedback');
 
     const timestamp = new Date();
 

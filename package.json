@@ -3,6 +3,9 @@
     "prettier": "^3.6.2"
   },
   "scripts": {
-    "format": "prettier --write \"**/*.{js,jsx,json,css,html,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,json,css,html,md}\"",
+    "test:ui": "cd ui-test && npm test",
+    "test:ui:local": "cd ui-test && npm test",
+    "test:ui:vercel": "cd ui-test && BASE_URL=https://your-vercel-url.vercel.app npm test"
   }
 }
