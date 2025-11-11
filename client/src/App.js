@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { FaUserCircle } from 'react-icons/fa';
 import './App.css';
 import { useRefCheck } from './hooks/useRefCheck';
+import StaffPinEntry from './components/TaskManagement/StaffPinEntry';
+import TaskList from './components/TaskManagement/TaskList';
 
 const positiveReasons = [
   'Overall Experience was Great',
@@ -252,6 +255,11 @@ function App() {
   const detailsRef = useRef(null); // top of reasons/comment section
   const emojiRowRef = useRef(null); // where the emoji row sits
 
+  // Task Management State
+  const [showTaskManagement, setShowTaskManagement] = useState(false);
+  const [taskAuthCompleted, setTaskAuthCompleted] = useState(false);
+  const [staffInfo, setStaffInfo] = useState(null);
+
   // Whether config.json has been fetched (non-empty object), regardless of field values
   const configLoaded = Object.keys(config || {}).length > 0;
 
@@ -498,6 +506,52 @@ function App() {
   const getVariantForRating = (r) =>
     r === 'Excellent' ? 'veryPositive' : r === 'Good' ? 'positive' : 'negative';
 
+  // Check if asset is Floor type (enables task management)
+  const isFloorAsset = refState.status === 'ok' && refState.data?.assetProfileName === 'Floor';
+
+  // Task Management Handlers
+  const handleStaffLoginClick = () => {
+    setShowTaskManagement(true);
+  };
+
+  const handleBackToFeedback = () => {
+    setShowTaskManagement(false);
+    setTaskAuthCompleted(false);
+  };
+
+  const handleStaffPinValidated = (staffData) => {
+    setStaffInfo(staffData);
+    setTaskAuthCompleted(true);
+  };
+
+  // Render Task Management views
+  if (showTaskManagement && isFloorAsset) {
+    if (!taskAuthCompleted) {
+      return (
+        <>
+          <StaffPinEntry onPinValidated={handleStaffPinValidated} onBackHome={handleBackToFeedback} />
+          <div className="powered-by-footer">
+            <span className="powered-by-text">Powered by</span>
+            <img src="/logos/myhub.png" alt="myHuB" className="powered-by-logo" />
+          </div>
+        </>
+      );
+    }
+    return (
+      <>
+        <TaskList
+          assetId={refState.data?.assetId}
+          onBackHome={handleBackToFeedback}
+          staffInfo={staffInfo}
+        />
+        <div className="powered-by-footer">
+          <span className="powered-by-text">Powered by</span>
+          <img src="/logos/myhub.png" alt="myHuB" className="powered-by-logo" />
+        </div>
+      </>
+    );
+  }
+
   return (
     <div className="App">
       {/* 🆕 Tiny badge so you can visually confirm which refId is active */}
@@ -699,6 +753,25 @@ function App() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* STAFF LOGIN Button - Only for Floor assets */}
+            {isFloorAsset && !rating && (
+              <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                zIndex: 100
+              }}>
+                <button
+                  className="staff-login-btn"
+                  onClick={handleStaffLoginClick}
+                  aria-label="Staff Login"
+                >
+                  <FaUserCircle style={{ fontSize: '24px', marginRight: '8px' }} />
+                  STAFF LOGIN
+                </button>
+              </div>
             )}
           </main>
         </>
