@@ -1,72 +1,61 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import '../../TaskManagement.css';
 
 function ResolveTaskModal({ task, onClose, onTaskResolved }) {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [isValidating, setIsValidating] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
 
-  const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null), useRef(null), useRef(null)];
-
-  const handleInputChange = (index, value) => {
-    const digit = value.replace(/\D/g, '').slice(0, 1);
-    const newOtp = [...otp];
-    newOtp[index] = digit;
-    setOtp(newOtp);
+  const handleConfirm = async () => {
+    setIsResolving(true);
     setError('');
-    setSuccess('');
 
-    // Auto-focus next input
-    if (digit && index < 5) {
-      inputRefs[index + 1].current?.focus();
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    // Backspace on empty field - go to previous
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs[index - 1].current?.focus();
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const otpString = otp.join('');
-    if (otpString.length !== 6) {
-      setError('Please enter a 6-digit OTP');
-      return;
-    }
-
-    setIsValidating(true);
-
-    // TODO: Replace with actual API call to validate OTP
-    // Mock validation - accept "123456" for now
-    setTimeout(() => {
-      if (otpString === '123456') {
-        setSuccess('OTP Validated Successfully. Will proceed updating Task Status to Resolved.');
-        setError('');
-
-        // Close modal and update task after 2 seconds
-        setTimeout(() => {
-          onTaskResolved(task.id);
-        }, 2000);
-      } else {
-        setError('OTP Invalid. Please try again.');
-        setOtp(['', '', '', '', '', '']);
-        setSuccess('');
-        inputRefs[0].current?.focus();
+    try {
+      // Call the resolve task webhook with alarmId
+      const resolveApiUrl = process.env.REACT_APP_RESOLVE_TASK_API;
+      if (!resolveApiUrl) {
+        throw new Error('REACT_APP_RESOLVE_TASK_API is not defined in .env');
       }
-      setIsValidating(false);
-    }, 500);
+
+      const response = await fetch(`${resolveApiUrl}?alarmId=${task.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          taskId: task.id,
+          assetId: task.assetId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to resolve task: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Task resolved successfully:', result);
+
+      setSuccess('Task marked as completed successfully!');
+      setError('');
+
+      // Close modal and update task after 1.5 seconds
+      setTimeout(() => {
+        onTaskResolved(task.id);
+      }, 1500);
+    } catch (error) {
+      console.error('Error resolving task:', error);
+      setError('Failed to resolve task. Please try again.');
+      setSuccess('');
+    } finally {
+      setIsResolving(false);
+    }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">Enter OTP to Resolve Task</h3>
+          <h3 className="modal-title">Mark Task as Completed</h3>
         </div>
 
         <div className="modal-body">
@@ -88,45 +77,30 @@ function ResolveTaskModal({ task, onClose, onTaskResolved }) {
           )}
 
           {!success && (
-            <form onSubmit={handleSubmit}>
-              <div className="otp-input-container">
-                {[0, 1, 2, 3, 4, 5].map((index) => (
-                  <input
-                    key={index}
-                    ref={inputRefs[index]}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={otp[index]}
-                    onChange={(e) => handleInputChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="otp-input-box"
-                    autoFocus={index === 0}
-                    placeholder="_"
-                    disabled={isValidating}
-                    aria-label={`OTP digit ${index + 1}`}
-                  />
-                ))}
-              </div>
+            <div>
+              <p className="confirmation-message">
+                Have you completed this task?
+              </p>
 
               <div className="modal-actions">
                 <button
                   type="button"
                   className="modal-cancel-btn"
                   onClick={onClose}
-                  disabled={isValidating}
+                  disabled={isResolving}
                 >
-                  Cancel
+                  No
                 </button>
                 <button
-                  type="submit"
+                  type="button"
                   className="modal-submit-btn"
-                  disabled={otp.join('').length !== 6 || isValidating}
+                  onClick={handleConfirm}
+                  disabled={isResolving}
                 >
-                  {isValidating ? 'Validating...' : 'Submit'}
+                  {isResolving ? 'Marking as Completed...' : 'Yes, Mark as Completed'}
                 </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       </div>
