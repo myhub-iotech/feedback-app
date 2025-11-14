@@ -17,15 +17,11 @@ function ResolveTaskModal({ task, onClose, onTaskResolved }) {
         throw new Error('REACT_APP_RESOLVE_TASK_API is not defined in .env');
       }
 
-      const response = await fetch(`${resolveApiUrl}?alarmId=${task.id}`, {
+      const response = await fetch(`${resolveApiUrl}?alarmId=${task.id.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          taskId: task.id,
-          assetId: task.assetId,
-        }),
+        }
       });
 
       if (!response.ok) {
