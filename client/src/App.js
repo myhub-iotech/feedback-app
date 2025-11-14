@@ -5,6 +5,7 @@ import './App.css';
 import { useRefCheck } from './hooks/useRefCheck';
 import StaffPinEntry from './components/TaskManagement/StaffPinEntry';
 import TaskList from './components/TaskManagement/TaskList';
+import packageJson from '../package.json';
 
 const positiveReasons = [
   'Overall Experience was Great',
@@ -259,6 +260,26 @@ function App() {
   const [showTaskManagement, setShowTaskManagement] = useState(false);
   const [taskAuthCompleted, setTaskAuthCompleted] = useState(false);
   const [staffInfo, setStaffInfo] = useState(null);
+
+  // Auto-refresh kiosk app daily at 3 AM
+  useEffect(() => {
+    const checkAndRefresh = () => {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+
+      // Refresh at 3:00 AM
+      if (hours === 3 && minutes === 0) {
+        console.log('Daily auto-refresh triggered at 3:00 AM');
+        window.location.reload();
+      }
+    };
+
+    // Check every minute
+    const interval = setInterval(checkAndRefresh, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Whether config.json has been fetched (non-empty object), regardless of field values
   const configLoaded = Object.keys(config || {}).length > 0;
@@ -530,6 +551,9 @@ function App() {
       return (
         <>
           <StaffPinEntry onPinValidated={handleStaffPinValidated} onBackHome={handleBackToFeedback} />
+          <div className="version-footer">
+            <span className="version-text">v{packageJson.version}</span>
+          </div>
           <div className="powered-by-footer">
             <span className="powered-by-text">Powered by</span>
             <img src="/logos/myhub.png" alt="myHuB" className="powered-by-logo" />
@@ -544,6 +568,9 @@ function App() {
           onBackHome={handleBackToFeedback}
           staffInfo={staffInfo}
         />
+        <div className="version-footer">
+          <span className="version-text">v{packageJson.version}</span>
+        </div>
         <div className="powered-by-footer">
           <span className="powered-by-text">Powered by</span>
           <img src="/logos/myhub.png" alt="myHuB" className="powered-by-logo" />
