@@ -809,6 +809,11 @@ function App() {
           onClose={() => setSubmitted(false)}
         />
       )}
+
+      {/* Version Footer */}
+      <div className="version-footer">
+        <span className="version-text">v{packageJson.version}</span>
+      </div>
     </div>
   );
 }
