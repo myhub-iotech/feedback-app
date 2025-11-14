@@ -16,77 +16,40 @@ function TaskList({ assetId, onBackHome, staffInfo }) {
 
   const isSupervisor = staffInfo?.role === 'staff_admin';
 
-  // Mock task data - TODO: Replace with API call
+  // Fetch tasks from API
   useEffect(() => {
-    const mockTasks = [
-      {
-        id: 'task-1',
-        type: 'Paper Towel Refill',
-        status: 'Open',
-        washroom: 'Men',
-        washroomLabel: '4F Men Washroom',
-        createdAt: '2025-10-10T23:30:00Z',
-        assetId: assetId,
-        assignedTo: {
-          id: 'staff-1',
-          name: 'John Smith',
-        },
-      },
-      {
-        id: 'task-2',
-        type: 'Toilet Roll Refill',
-        status: 'In Progress',
-        washroom: 'Women',
-        washroomLabel: '4F Women Washroom',
-        createdAt: '2025-10-10T23:30:00Z',
-        assetId: assetId,
-        assignedTo: {
-          id: 'staff-2',
-          name: 'Maria Garcia',
-        },
-      },
-      {
-        id: 'task-3',
-        type: 'Trash Bin Clean Up',
-        status: 'Open',
-        washroom: 'Men',
-        washroomLabel: '4F Men Washroom',
-        createdAt: '2025-10-10T23:45:00Z',
-        assetId: assetId,
-        assignedTo: {
-          id: 'staff-1',
-          name: 'John Smith',
-        },
-      },
-      {
-        id: 'task-4',
-        type: 'Soap Dispenser Refill',
-        status: 'Resolved',
-        washroom: 'Women',
-        washroomLabel: '4F Women Washroom',
-        createdAt: '2025-10-10T22:15:00Z',
-        assetId: assetId,
-        assignedTo: {
-          id: 'staff-2',
-          name: 'Maria Garcia',
-        },
-      },
-    ];
-    setTasks(mockTasks);
+    const fetchTasks = async () => {
+      try {
+        const tasksApiUrl = process.env.REACT_APP_TASKS_API;
+        if (!tasksApiUrl) {
+          console.error('REACT_APP_TASKS_API is not defined in .env');
+          return;
+        }
+
+        const response = await fetch(tasksApiUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('Fetched tasks:', data);
+        setTasks(data);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        setTasks([]);
+      }
+    };
+
+    fetchTasks();
   }, [assetId]);
 
   // Filter tasks based on selected status filters and staff (for supervisors)
   useEffect(() => {
     let filtered = tasks.filter((task) => statusFilters.includes(task.status));
 
-    // If not supervisor, only show tasks assigned to current user
-    if (!isSupervisor) {
-      filtered = filtered.filter((task) => task.assignedTo.id === staffInfo?.id);
-    } else {
-      // If supervisor and staff filter is set, filter by selected staff
-      if (staffFilter !== 'all') {
-        filtered = filtered.filter((task) => task.assignedTo.id === staffFilter);
-      }
+    // If supervisor and staff filter is set, filter by selected staff
+    if (isSupervisor && staffFilter !== 'all') {
+      filtered = filtered.filter((task) => task.assignedTo?.id === staffFilter);
     }
 
     setFilteredTasks(filtered);
