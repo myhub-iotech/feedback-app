@@ -45,7 +45,7 @@ function StaffPinEntry({ onPinValidated, onBackHome }) {
 
     // TODO: Replace with actual API call
     // Mock validation - accept "1234" for Staff User, "9999" for Staff Admin
-    if (pinString === '1234') {
+    if (pinString === '4280') {
       // Mock staff data - Staff User
       const staffData = {
         id: 'staff-1',
@@ -56,7 +56,7 @@ function StaffPinEntry({ onPinValidated, onBackHome }) {
         role: 'staff_user', // staff_user or staff_admin
       };
       onPinValidated(staffData);
-    } else if (pinString === '9999') {
+    } else if (pinString === '0060') {
       // Mock staff data - Staff Admin (Supervisor)
       const staffData = {
         id: 'admin-1',
